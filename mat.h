@@ -49,6 +49,8 @@ class mat {
     // Overloading the ( ) operator to access matrix 
     T& operator () (int, int=0);
 
+    // Overloading the [ ] operate to access matrix using a flat index
+    T& operator [] (int);
 
     mat operator + (const mat &);
 

@@ -211,6 +211,17 @@ T& mat<T>::operator () (int rowIdx, int colIdx) {
 
 }
 
+
+T& mat<T>::operator [] (int flatIdx){
+    if (_mtFormat == COO){
+
+        cooToDense();
+    }
+
+    return _ddata[flatIdx];
+
+}
+
 template <typename T>
 mat<T> mat<T>::operator + (const mat<T> & rhs){
 
