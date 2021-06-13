@@ -33,10 +33,10 @@ class mat {
 
     
     // compression related
-    _isCompressed = false;
+    bool _isCompressed = false;
 
 
-    compressByRow(size_t, bool);
+    void compressByRow(size_t, bool);
 
     public:
     mat();

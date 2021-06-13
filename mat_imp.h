@@ -211,7 +211,7 @@ T& mat<T>::operator () (int rowIdx, int colIdx) {
 
 }
 
-
+template <typename T>
 T& mat<T>::operator [] (int flatIdx){
     if (_mtFormat == COO){
 
@@ -529,15 +529,15 @@ void mat<T>::denseToCoo() {
 }
 
 template <typename T>
-mat<T>::compressByRow(size_t blockSize, bool removeOriginal) {
+void mat<T>::compressByRow(size_t blockSize, bool removeOriginal) {
 
 
-    if (_format == DENSE){
+    if (_mtFormat == DENSE){
         
         if (!_denseAllocated){
             
             std::cerr << "Data for matrix not allocated yet!" << std::endl;
-            return 
+            return; 
         }
         
         // TODO (what if blockSize does not divide _nrows)

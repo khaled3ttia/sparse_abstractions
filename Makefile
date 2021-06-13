@@ -1,4 +1,8 @@
+CC=clang++
+HEADERDIR=/home/khaled/Documents/anl/snappy/
+SNAPPYBUILD=/home/khaled/Documents/anl/snappy/build
+CFLAGS=-std=c++11 -g -I $(HEADERDIR) -I $(SNAPPYBUILD) -L $(SNAPPYBUILD) -lsnappy
 default:
-	clang++ -std=c++11 -g main.cpp -o testApp.exe
+	$(CC) $(CFLAGS) main.cpp -o testApp.exe
 clean:
 	rm *.exe
