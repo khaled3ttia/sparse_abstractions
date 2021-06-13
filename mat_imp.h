@@ -204,15 +204,22 @@ mat<T>::mat(const mat<T> & rhs) : _ncols(rhs._ncols), _nrows(rhs._nrows), _nnz(r
 // Overloading the () operator
 template <typename T>
 T& mat<T>::operator () (int rowIdx, int colIdx) {
+
+    assert(rowIdx < _nrows && colIdx < _ncols);
+
     if (_mtFormat == COO) {
         cooToDense();
     }
+    
     return _ddata[rowIdx * _ncols + colIdx]; 
 
 }
 
 template <typename T>
 T& mat<T>::operator [] (int flatIdx){
+
+    assert(flatIdx < _nrows * _ncols);
+    
     if (_mtFormat == COO){
 
         cooToDense();

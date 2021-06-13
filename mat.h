@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <assert.h>
 #include "snappy.h"
 
 enum format {
