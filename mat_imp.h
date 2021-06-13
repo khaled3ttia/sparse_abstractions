@@ -527,6 +527,58 @@ void mat<T>::denseToCoo() {
     }
 
 }
+
+template <typename T>
+mat<T>::compressByRow(size_t blockSize, bool removeOriginal) {
+
+
+    if (_format == DENSE){
+        
+        if (!_denseAllocated){
+            
+            std::cerr << "Data for matrix not allocated yet!" << std::endl;
+            return 
+        }
+        
+        // TODO (what if blockSize does not divide _nrows)
+
+        int nBlocks = _nrows / blockSize;
+
+        _compressedData = new std::string[nBlocks];
+
+        size_t compLength[nBlocks];
+
+
+        int blockOffset = 0; 
+
+
+        for (int i = 0 ; i < nBlocks; i++){
+
+            T* block = new T[_ncols*blockSize];
+
+            block = _ddata + blockOffset;
+
+            char * uncompressedBlock = (char*)block; 
+
+           
+            compLength[i] = snappy::Compress(uncompressedBlock, _ncols * sizeof(T) * blockSize, &_compressedData[i]);
+
+            blockOffset += _ncols * blockSize;
+        }
+
+        _isCompressed = true;
+
+        if (removeOriginal){
+            
+            delete [] _ddata;
+            _denseAllocated = false;      
+
+        }
+    }
+
+
+}
+
 //TODO: printing a matrix using cout ? 
 //std::ostream & operator << (std::ostream & o, const mat<T> & m){
 

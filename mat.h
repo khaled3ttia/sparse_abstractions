@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include "snappy.h"
 
 enum format {
     DENSE,
@@ -20,6 +21,8 @@ class mat {
 
     // structures for dense
     T * _ddata;
+    std::string * _compressedData; 
+
     bool _denseAllocated = false; 
    
     // structures for COO 
@@ -28,6 +31,12 @@ class mat {
     int * _cooColIdx; 
     bool _cooAllocated = false; 
 
+    
+    // compression related
+    _isCompressed = false;
+
+
+    compressByRow(size_t, bool);
 
     public:
     mat();
