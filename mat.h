@@ -39,6 +39,8 @@ class mat {
 
     void compressByRow(size_t, bool);
 
+    void decompressByRow(size_t, bool);
+
     public:
     mat();
     

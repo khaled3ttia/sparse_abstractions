@@ -586,6 +586,83 @@ void mat<T>::compressByRow(size_t blockSize, bool removeOriginal) {
 
 }
 
+template <typename T>
+void mat<T>::decompressByRow(size_t blockSize, bool removeCompressed) {
+    
+    // TODO: delete [] unused
+
+    if (_mtFormat == DENSE) {
+
+        if (!_isCompressed){
+    
+            std::cerr << "Matrix is not compressed!" << std::endl;
+            return;
+        }
+        
+        int nBlocks = _nrows / blockSize;
+
+        size_t totalUncompressedBytes = 0; 
+
+        std::string * uncompressedData = new std::string[nBlocks];
+        
+        size_t blocksSizes[nBlocks];
+
+        for (int i = 0 ; i < nBlocks; i++){
+            size_t partialSize;
+            snappy::GetUncompressedLength(_compressedData[i].data(), _compressedData[i].size(), &partialSize);
+
+            totalUncompressedBytes += partialSize;
+
+            snappy::Uncompress(_compressedData[i].data(), _compressedData[i].size(), &uncompressedData[i]);
+
+            blocksSizes[i] = partialSize;
+
+
+
+        }
+
+        _ddata = new T[totalUncompressedBytes / sizeof(T)];
+
+        int ddataOffset = 0;
+
+        for (int i = 0 ; i < nBlocks; i++){
+
+           
+            T* block = new T[blocksSizes[i]];
+
+            block = (T*)uncompressedData[i].c_str();
+
+            for (int j = ddataOffset; j < ddataOffset + blockSize*_ncols ; j++){
+                
+                _ddata[j] = block[j - i * ddataOffset];
+
+            }
+
+            if (ddataOffset < totalUncompressedBytes / sizeof(T)){
+
+                ddataOffset += blockSize*_ncols;
+
+            }
+
+
+
+        }
+
+        _denseAllocated = true;
+
+        if (removeCompressed){
+
+            _isCompressed = false; 
+            delete [] _compressedData; 
+
+        }
+
+    }
+
+}
+
+
+
 //TODO: printing a matrix using cout ? 
 //std::ostream & operator << (std::ostream & o, const mat<T> & m){
 
