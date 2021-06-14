@@ -2,11 +2,13 @@
 
 
 int main(){
+    
 
+    /*
         
     mat<float> b(10);
 
-    std::cout << b(10) << std::endl;
+    std::cout << b(9) << std::endl;
 
     
     mat<float> c(5);
@@ -24,13 +26,15 @@ int main(){
 
     // Test constructor with mtx file
     mat<float> Y("s.mtx", COO);
-
+    */
 
     mat<float> smtx("s.mtx", DENSE);
 
     // Test ( ) operator overload 
     std::cout << smtx(7,4) << std::endl;
 
+
+    /*
     // Test format conversion
 
     smtx.denseToCoo();
@@ -52,4 +56,5 @@ int main(){
 
 
     std::cout << g(7,4) << std::endl;
+    */
 }
