@@ -78,7 +78,10 @@ mat<T>::mat(int nrows, int ncols, int nnz, T *& coovals, int *& cooRowIdx, int *
 
 // Constructor that loads the matrix from a mtx file, using the specified format
 template <typename T>
-mat<T>::mat(std::string matFile, format mtFormat): _mtFormat(mtFormat){
+mat<T>::mat(std::string matFile, int blockSizeRows, format mtFormat): _blockSizeRows(blockSizeRows), _mtFormat(mtFormat){
+    
+    assert(_nrows % _blockSizeRows == 0);
+
 
     int currentLine = 0; 
     int currentIndex = 0; 
@@ -180,7 +183,7 @@ mat<T>::mat(std::string matFile, format mtFormat): _mtFormat(mtFormat){
     
     if (_mtFormat == DENSE){
         
-        compressByRow(2,true);
+        compressByRow(true);
         
     }
 
@@ -207,6 +210,25 @@ mat<T>::mat(const mat<T> & rhs) : _ncols(rhs._ncols), _nrows(rhs._nrows), _nnz(r
 
 }
 
+template <typename T>
+T& mat<T>::getCompressedElement(int rowIdx, int colIdx){
+
+    // TODO: this should return a reference to the element
+    // in the uncompressed block in cache
+
+    int blockId = floor(rowIdx / _blockSizeRows);
+    int rowWithinBlock = rowIdx % _blockSizeRows; 
+
+    std::string uncompressedBlock;
+
+    snappy::Uncompress(_compressedData[blockId].data(), _compressedData[blockId].size(), &uncompressedBlock);
+
+    T* block = (T*)uncompressedBlock.c_str();
+   
+    return block[rowWithinBlock * _ncols + colIdx]; 
+
+
+}
 
 // Overloading the () operator
 template <typename T>
@@ -218,12 +240,13 @@ T& mat<T>::operator () (int rowIdx, int colIdx) {
         cooToDense();
     }
     
-    
     if (_isCompressed){
-        decompressByRow(2, true);
+        return getCompressedElement(rowIdx, colIdx);
+     
+        
     }
 
-    return _ddata[rowIdx * _ncols + colIdx]; 
+    return _ddata[rowIdx * _ncols + colIdx];
 
 }
 
@@ -533,22 +556,18 @@ void mat<T>::denseToCoo() {
 
         }
         
-        
         _cooAllocated = true; 
         _mtFormat = COO; 
 
 
         delete [] _ddata;
         _denseAllocated = false; 
-
-
-
     }
 
 }
 
 template <typename T>
-void mat<T>::compressByRow(size_t blockSize, bool removeOriginal) {
+void mat<T>::compressByRow(bool removeOriginal) {
 
 
     if (_mtFormat == DENSE){
@@ -561,7 +580,7 @@ void mat<T>::compressByRow(size_t blockSize, bool removeOriginal) {
         
         // TODO (what if blockSize does not divide _nrows)
 
-        int nBlocks = _nrows / blockSize;
+        int nBlocks = _nrows / _blockSizeRows;
 
         _compressedData = new std::string[nBlocks];
 
@@ -570,7 +589,7 @@ void mat<T>::compressByRow(size_t blockSize, bool removeOriginal) {
 
         int blockOffset = 0; 
 
-        T* block = new T[_ncols*blockSize];
+        T* block = new T[_ncols*_blockSizeRows];
 
         for (int i = 0 ; i < nBlocks; i++){
 
@@ -580,15 +599,12 @@ void mat<T>::compressByRow(size_t blockSize, bool removeOriginal) {
             char * uncompressedBlock = (char*)block; 
 
            
-            compLength[i] = snappy::Compress(uncompressedBlock, _ncols * sizeof(T) * blockSize, &_compressedData[i]);
+            compLength[i] = snappy::Compress(uncompressedBlock, _ncols * sizeof(T) * _blockSizeRows, &_compressedData[i]);
 
-            blockOffset += _ncols * blockSize;
-
+            blockOffset += _ncols * _blockSizeRows;
             
         }
 
-
-        
 
         _isCompressed = true;
 
@@ -604,7 +620,7 @@ void mat<T>::compressByRow(size_t blockSize, bool removeOriginal) {
 }
 
 template <typename T>
-void mat<T>::decompressByRow(size_t blockSize, bool removeCompressed) {
+void mat<T>::decompressByRow( bool removeCompressed) {
     
     // TODO: delete [] unused
 
@@ -616,7 +632,7 @@ void mat<T>::decompressByRow(size_t blockSize, bool removeCompressed) {
             return;
         }
         
-        int nBlocks = _nrows / blockSize;
+        int nBlocks = _nrows / _blockSizeRows;
 
         size_t totalUncompressedBytes = 0; 
 
@@ -648,11 +664,11 @@ void mat<T>::decompressByRow(size_t blockSize, bool removeCompressed) {
            
             //T* block = new T[blocksSizes[i]];
             
-            T* block = new T[blockSize * _ncols * sizeof(T)];
+            T* block = new T[_blockSizeRows * _ncols * sizeof(T)];
 
             block = (T*)uncompressedData[i].c_str();
 
-            for (int j = ddataOffset; j < ddataOffset + blockSize*_ncols ; j++){
+            for (int j = ddataOffset; j < ddataOffset + _blockSizeRows*_ncols ; j++){
                 
                 _ddata[j] = block[j - i * ddataOffset];
 
@@ -660,12 +676,9 @@ void mat<T>::decompressByRow(size_t blockSize, bool removeCompressed) {
 
             if (ddataOffset < totalUncompressedBytes / sizeof(T)){
 
-                ddataOffset += blockSize*_ncols;
+                ddataOffset += _blockSizeRows*_ncols;
 
             }
-
-
-
         }
 
         // collect garbage 

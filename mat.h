@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <assert.h>
+#include <cmath>
 #include "snappy.h"
 
 enum format {
@@ -24,7 +25,8 @@ class mat {
     T * _ddata;
     std::string * _compressedData; 
 
-    bool _denseAllocated = false; 
+    bool _denseAllocated = false;
+
    
     // structures for COO 
     T * _coovals;
@@ -35,11 +37,13 @@ class mat {
     
     // compression related
     bool _isCompressed = false;
+    size_t _blockSizeRows = 2;
 
+    void compressByRow(bool = true);
 
-    void compressByRow(size_t, bool);
+    void decompressByRow(bool = true);
 
-    void decompressByRow(size_t, bool);
+    T& getCompressedElement(int, int);
 
     public:
     mat();
@@ -52,7 +56,7 @@ class mat {
     //mat(int, int, int, T *&, int *&, int *&);
     
     // Read a matrix from a mtx file using the specified format 
-    mat(std::string, format);
+    mat(std::string, int=2,  format=DENSE);
    
 
     // copy constructor 

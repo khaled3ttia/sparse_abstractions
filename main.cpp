@@ -28,7 +28,7 @@ int main(){
     mat<float> Y("s.mtx", COO);
     */
 
-    mat<float> smtx("s.mtx", DENSE);
+    mat<float> smtx("s.mtx", 2,  DENSE);
 
     // Test ( ) operator overload 
     std::cout << smtx(7,4) << std::endl;
