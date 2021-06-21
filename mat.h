@@ -64,7 +64,7 @@ class mat {
     //mat(int, int, int, T *&, int *&, int *&);
     
     // Read a matrix from a mtx file using the specified format 
-    mat(std::string, int=2,  format=DENSE);
+    mat(std::string, int=2,  format=DENSE, bool=true);
    
 
     // copy constructor 

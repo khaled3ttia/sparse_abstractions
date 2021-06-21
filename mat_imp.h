@@ -96,7 +96,7 @@ mat<T>::mat(int nrows, int ncols, int nnz, T *& coovals, int *& cooRowIdx, int *
 
 // Constructor that loads the matrix from a mtx file, using the specified format
 template <typename T>
-mat<T>::mat(std::string matFile, int blockSizeRows, format mtFormat): _blockSizeRows(blockSizeRows), _mtFormat(mtFormat){
+mat<T>::mat(std::string matFile, int blockSizeRows, format mtFormat, bool compress): _blockSizeRows(blockSizeRows), _mtFormat(mtFormat){
    
 
     _id = _nMatrices;
@@ -201,12 +201,12 @@ mat<T>::mat(std::string matFile, int blockSizeRows, format mtFormat): _blockSize
 
     _nMatrices++;
 
-    if (_mtFormat == DENSE){
-        
-        compressByRow(true);
-        
+    if (compress){
+         if (_mtFormat == DENSE){
+            compressByRow(true);     
+        }
     }
-
+   
 }
 
 
