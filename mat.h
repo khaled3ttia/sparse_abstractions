@@ -19,9 +19,9 @@ class mat {
     int _id;
     
     // common fields
-    int _ncols;
-    int _nrows; 
-    int _nnz;
+    unsigned int _ncols;
+    unsigned int _nrows; 
+    unsigned int _nnz;
     enum format _mtFormat;
 
     // structures for dense
@@ -85,6 +85,11 @@ class mat {
 
     // Copy operator 
     mat & operator = (const mat &);
+
+
+    int getNRows();
+    int getNCols();
+    int getNNnz();
 
 
     // Destructor 

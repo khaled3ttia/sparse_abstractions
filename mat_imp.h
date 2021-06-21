@@ -97,8 +97,7 @@ mat<T>::mat(int nrows, int ncols, int nnz, T *& coovals, int *& cooRowIdx, int *
 // Constructor that loads the matrix from a mtx file, using the specified format
 template <typename T>
 mat<T>::mat(std::string matFile, int blockSizeRows, format mtFormat): _blockSizeRows(blockSizeRows), _mtFormat(mtFormat){
-    
-    assert(_nrows % _blockSizeRows == 0);
+   
 
     _id = _nMatrices;
 
@@ -248,13 +247,12 @@ T& mat<T>::getCompressedElement(int rowIdx, int colIdx){
 
     T * data;
     if (it != _Cache.getEnd()){
-
-        std::cout << "Exists!" << std::endl;
+        // Cache hit 
         data = _Cache.access(it); 
 
 
     }else {
-        std::cout << "Doesn't exist :(" << std::endl;
+        // Cache Miss
         std::string uncompressedBlock;
 
         snappy::Uncompress(_compressedData[blockId].data(), _compressedData[blockId].size(), &uncompressedBlock);
@@ -667,6 +665,22 @@ void mat<T>::compressByRow(bool removeOriginal) {
 
 
 }
+
+template <typename T>
+int mat<T>::getNRows(){
+    return _nrows;
+}
+
+template <typename T>
+int mat<T>::getNCols(){
+    return _ncols;
+}
+
+template <typename T>
+int mat<T>::getNNnz(){
+    return _nnz;
+}
+
 
 template <typename T>
 void mat<T>::decompressByRow( bool removeCompressed) {
