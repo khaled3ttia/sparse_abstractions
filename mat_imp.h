@@ -261,7 +261,8 @@ T& mat<T>::getCompressedElement(int rowIdx, int colIdx){
 
         T* block = (T*)uncompressedBlock.c_str();
 
-        Block<T> b(block, _ncols * _blockSizeRows * sizeof(T));
+        //Block<T> b(block, _ncols * _blockSizeRows * sizeof(T));
+        Block<T> b(block, _ncols * _blockSizeRows);
 
         _Cache.insert(bid, b);
 
