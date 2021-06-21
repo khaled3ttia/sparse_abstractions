@@ -1,9 +1,22 @@
+template <typename T>
+BlockCache<T> mat<T>::_Cache(128);
+
+template <typename T>
+int mat<T>::_nMatrices; 
+
+template <typename T>
+void mat<T>::setCacheSize(int val){
+    _Cache.setMaxSize(val);
+}
 
 // Dummy default constructor, if no parameters passed 
 // create a 10-element array
 template <typename T>
 mat<T>::mat() {
-    
+
+    _id = _nMatrices; 
+    _nMatrices++;
+
     _ddata = new T[10];
     _denseAllocated = true;
     _mtFormat = DENSE;
@@ -17,6 +30,8 @@ mat<T>::mat() {
 template <typename T>
 mat<T>::mat(int nrows, int ncols, format mtFormat): _nrows(nrows), _ncols(ncols), _mtFormat(mtFormat){
 
+    _id = _nMatrices; 
+    _nMatrices++;
     
     int nElems = nrows * ncols; 
 
@@ -38,6 +53,9 @@ mat<T>::mat(int nrows, int ncols, format mtFormat): _nrows(nrows), _ncols(ncols)
 // Constructor for dense 
 template <typename T> 
 mat<T>::mat(int nrows, int ncols, int nnz, T *& data): _nrows(nrows), _ncols(ncols), _nnz(nnz){
+
+    _id = _nMatrices;
+    _nMatrices++;
 
     _mtFormat = DENSE; 
 
@@ -81,6 +99,8 @@ template <typename T>
 mat<T>::mat(std::string matFile, int blockSizeRows, format mtFormat): _blockSizeRows(blockSizeRows), _mtFormat(mtFormat){
     
     assert(_nrows % _blockSizeRows == 0);
+
+    _id = _nMatrices;
 
 
     int currentLine = 0; 
@@ -180,7 +200,8 @@ mat<T>::mat(std::string matFile, int blockSizeRows, format mtFormat): _blockSize
         }
     }
 
-    
+    _nMatrices++;
+
     if (_mtFormat == DENSE){
         
         compressByRow(true);
@@ -193,6 +214,7 @@ mat<T>::mat(std::string matFile, int blockSizeRows, format mtFormat): _blockSize
 template <typename T>
 mat<T>::mat(const mat<T> & rhs) : _ncols(rhs._ncols), _nrows(rhs._nrows), _nnz(rhs._nnz), _mtFormat(rhs._mtFormat){
 
+    _id = _nMatrices;
     if (_mtFormat == DENSE) {
         size_t numElems = _ncols * _nrows;
 
@@ -208,6 +230,7 @@ mat<T>::mat(const mat<T> & rhs) : _ncols(rhs._ncols), _nrows(rhs._nrows), _nnz(r
         }
     } // TODO if (_mtFormat == COO)
 
+    _nMatrices++;
 }
 
 template <typename T>
@@ -217,15 +240,39 @@ T& mat<T>::getCompressedElement(int rowIdx, int colIdx){
     // in the uncompressed block in cache
 
     int blockId = floor(rowIdx / _blockSizeRows);
-    int rowWithinBlock = rowIdx % _blockSizeRows; 
+    int rowWithinBlock = rowIdx % _blockSizeRows;
 
-    std::string uncompressedBlock;
+    BlockId bid = {_id, blockId}; 
 
-    snappy::Uncompress(_compressedData[blockId].data(), _compressedData[blockId].size(), &uncompressedBlock);
+    auto it = _Cache.find(bid);
 
-    T* block = (T*)uncompressedBlock.c_str();
-   
-    return block[rowWithinBlock * _ncols + colIdx]; 
+    T * data;
+    if (it != _Cache.getEnd()){
+
+        std::cout << "Exists!" << std::endl;
+        data = _Cache.access(it); 
+
+
+    }else {
+        std::cout << "Doesn't exist :(" << std::endl;
+        std::string uncompressedBlock;
+
+        snappy::Uncompress(_compressedData[blockId].data(), _compressedData[blockId].size(), &uncompressedBlock);
+
+        T* block = (T*)uncompressedBlock.c_str();
+
+        Block<T> b(block, _ncols * _blockSizeRows * sizeof(T));
+
+        _Cache.insert(bid, b);
+
+        data = b.getData();
+    }
+
+       //delete [] block;
+
+    return data[rowWithinBlock * _ncols + colIdx];
+
+    //return block[rowWithinBlock * _ncols + colIdx]; 
 
 
 }
@@ -397,7 +444,7 @@ template <typename T>
 mat<T> & mat<T>::operator = (const mat<T> & rhs) {
 
     if (this != &rhs){
-
+        _id = _nMatrices;
         _ncols = rhs._ncols;
         _nrows = rhs._nrows;
         _nnz = rhs._nnz;
@@ -432,6 +479,7 @@ mat<T> & mat<T>::operator = (const mat<T> & rhs) {
             
         }//TODO (if _mtFormat == COO) 
 
+        _nMatrices++;
     }
     return *this;
 

@@ -5,6 +5,21 @@ template<typename T>
 BlockCache<T>::BlockCache(int size, replacementPolicy rPolicy): _size(size), _rPolicy(rPolicy){}
 
 template<typename T>
+int BlockCache<T>::getMaxSize(){
+    return _size;
+}
+
+template<typename T>
+void BlockCache<T>::setMaxSize(int val){
+    _size = val;
+}
+
+template<typename T>
+int BlockCache<T>::getSize(){
+    return _cache.size();
+}
+
+template<typename T>
 bool BlockCache<T>::insert(BlockId bid, Block<T> block){
     
     assert(_size > 0);
@@ -37,6 +52,7 @@ bool BlockCache<T>::insert(BlockId bid, Block<T> block){
     return false;
 }
 
+
 template<typename T>
 size_t BlockCache<T>::remove(BlockId bid){
     return _cache.erase(bid);
@@ -54,6 +70,19 @@ T*& BlockCache<T>::access(BlockId bid){
         return it->second.getData();
     }
 
+}
+
+template<typename T>
+T*& BlockCache<T>::access(typename std::map<BlockId, Block<T>,IDCompare>::iterator it){
+
+    it->second.access(); 
+    return it->second.getData();
+
+} 
+
+template<typename T>
+typename std::map<BlockId, Block<T>, IDCompare>::iterator BlockCache<T>::find(BlockId bid){
+    return _cache.find(bid);
 }
 
 template<typename T>

@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <cmath>
 #include "snappy.h"
+#include "blockcache.h"
 
 enum format {
     DENSE,
@@ -14,6 +15,8 @@ enum format {
 
 template <typename T>
 class mat {
+
+    int _id;
     
     // common fields
     int _ncols;
@@ -46,6 +49,11 @@ class mat {
     T& getCompressedElement(int, int);
 
     public:
+    
+    static BlockCache<T> _Cache;
+    static int _nMatrices;
+    static void setCacheSize(int);
+    
     mat();
     
     mat(int, int = 1, format=DENSE);   

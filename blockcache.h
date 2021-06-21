@@ -43,7 +43,6 @@ class Block{
 
 template<typename T>
 class BlockCache{
-    
     // A counter to capture number of insertions
     // this is also propagated to each individual block
     // to serve as an insertion timestamp for the block   
@@ -67,12 +66,23 @@ class BlockCache{
 
     BlockCache(int, replacementPolicy);
 
+    int getMaxSize();
+
+    void setMaxSize(int);
+
+    int getSize();
+
     bool insert(BlockId, Block<T>);
 
     size_t remove(BlockId);
 
+    typename std::map<BlockId, Block<T>, IDCompare>::iterator find(BlockId);
+
+    typename std::map<BlockId, Block<T>, IDCompare>::iterator getEnd() { return _cache.end(); };
+
     // Not safe?
     T*& access(BlockId);
+    T*& access(typename std::map<BlockId, Block<T>, IDCompare>::iterator);
 };
 
 #include "blockcache_impl.h"
