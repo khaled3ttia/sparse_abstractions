@@ -19,6 +19,7 @@ int BlockCache<T>::getSize(){
     return _cache.size();
 }
 
+/*
 template<typename T>
 bool BlockCache<T>::insert(BlockId bid, Block<T> block){
     
@@ -51,13 +52,53 @@ bool BlockCache<T>::insert(BlockId bid, Block<T> block){
     }
     return false;
 }
+*/
+template<typename T>
+bool BlockCache<T>::insert(int bid, Block<T> block){
+    
+    assert(_size > 0);
+    
 
+    // Record insetion order 
+    _insertions++; 
 
+    block.setInsertTime(_insertions); 
+
+    if (_cache.size() < _size){
+         _cache.insert(std::make_pair(bid, block));
+         return true;
+    }else {
+        
+        // TODO: implement other replacement policies here
+                
+        auto oldest = _cache.begin();
+        auto it = std::next(oldest);
+
+        while (it != _cache.end()){
+            if (it->second.getInsertTime() < oldest->second.getInsertTime()){
+                oldest = it;
+            }
+            it++;
+        }
+        _cache.insert(std::make_pair(bid, block));
+        return true;
+    }
+    return false;
+}
+
+/*
 template<typename T>
 size_t BlockCache<T>::remove(BlockId bid){
     return _cache.erase(bid);
 }
+*/
 
+template<typename T>
+size_t BlockCache<T>::remove(int bid){
+    return _cache.erase(bid);
+}
+
+/*
 template<typename T>
 T*& BlockCache<T>::access(BlockId bid){
 
@@ -71,7 +112,23 @@ T*& BlockCache<T>::access(BlockId bid){
     }
 
 }
+*/
 
+template<typename T>
+T*& BlockCache<T>::access(int bid){
+
+    auto it = _cache.find(bid);
+
+    if (it != _cache.end()){
+        
+        it->second.access();
+
+        return it->second.getData();
+    }
+
+}
+
+/*
 template<typename T>
 T*& BlockCache<T>::access(typename std::map<BlockId, Block<T>,IDCompare>::iterator it){
 
@@ -79,11 +136,28 @@ T*& BlockCache<T>::access(typename std::map<BlockId, Block<T>,IDCompare>::iterat
     return it->second.getData();
 
 } 
+*/
 
+template<typename T>
+T*& BlockCache<T>::access(typename std::map<int, Block<T>>::iterator it){
+
+    it->second.access(); 
+    return it->second.getData();
+
+} 
+
+/*
 template<typename T>
 typename std::map<BlockId, Block<T>, IDCompare>::iterator BlockCache<T>::find(BlockId bid){
     return _cache.find(bid);
 }
+*/
+
+template<typename T>
+typename std::map<int, Block<T>>::iterator BlockCache<T>::find(int bid){
+    return _cache.find(bid);
+}
+
 
 template<typename T>
 Block<T>::Block(T*& src){

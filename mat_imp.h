@@ -241,7 +241,9 @@ T& mat<T>::getCompressedElement(int rowIdx, int colIdx){
     int blockId = floor(rowIdx / _blockSizeRows);
     int rowWithinBlock = rowIdx % _blockSizeRows;
 
-    BlockId bid = {_id, blockId}; 
+    //BlockId bid = {_id, blockId}; 
+
+    int bid = blockId;
 
     auto it = _Cache.find(bid);
 

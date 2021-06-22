@@ -56,7 +56,8 @@ class BlockCache{
     replacementPolicy _rPolicy = FIFO;
 
     // The actual cache
-    std::map<BlockId, Block<T>, IDCompare> _cache;
+    //std::map<BlockId, Block<T>, IDCompare> _cache;
+    std::map<int, Block<T>> _cache;
 
     public:
 
@@ -72,17 +73,24 @@ class BlockCache{
 
     int getSize();
 
-    bool insert(BlockId, Block<T>);
+    //bool insert(BlockId, Block<T>);
+    bool insert(int, Block<T>);
 
-    size_t remove(BlockId);
+    //size_t remove(BlockId);
+    size_t remove(int);
 
-    typename std::map<BlockId, Block<T>, IDCompare>::iterator find(BlockId);
+    //typename std::map<BlockId, Block<T>, IDCompare>::iterator find(BlockId);
+    typename std::map<int, Block<T>>::iterator find(int);
 
-    typename std::map<BlockId, Block<T>, IDCompare>::iterator getEnd() { return _cache.end(); };
+    //typename std::map<BlockId, Block<T>, IDCompare>::iterator getEnd() { return _cache.end(); };
+    typename std::map<int, Block<T>>::iterator getEnd() { return _cache.end(); };
 
     // Not safe?
-    T*& access(BlockId);
-    T*& access(typename std::map<BlockId, Block<T>, IDCompare>::iterator);
+    //T*& access(BlockId);
+    T*& access(int);
+
+    //T*& access(typename std::map<BlockId, Block<T>, IDCompare>::iterator);
+    T*& access(typename std::map<int, Block<T>>::iterator);
 };
 
 #include "blockcache_impl.h"

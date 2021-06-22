@@ -22,8 +22,9 @@ int main(int argc, char** argv) {
     unsigned int cacheSize; 
     unsigned int blockSize; 
 
-    while ((opt = getopt(argc, argv, "f:c:b:hn")) != -1){
 
+    // Reading command line arguments
+    while ((opt = getopt(argc, argv, "f:c:b:hn")) != -1){
         switch (opt){
             case 'f':
                 if (optarg){
@@ -57,6 +58,8 @@ int main(int argc, char** argv) {
 
     }
 
+
+    // Setting default values
     if (!farg){
         filename = "data/fidap011.mtx";        
     }
