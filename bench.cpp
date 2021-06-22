@@ -9,7 +9,7 @@ void usage(){
     std::cout << " -c <cacheSize> : size of the software cache (in blocks)" << std::endl;
     std::cout << " -b <blockSize> : number of rows per block" << std::endl;
     std::cout << " -h : prints usgae information" << std::endl;
-
+    std::cout << " -n : don't compress martices" << std::endl;
     std::cout << "Example: " << std::endl;
     std::cout << "./bench.exe -f data/fidap001.mtx -c 32 - b 2" << std::endl;
 }
@@ -18,11 +18,11 @@ int main(int argc, char** argv) {
 
     int opt; 
     std::string filename;
-    bool farg, carg,barg;
+    bool farg, carg,barg, compress = true;
     unsigned int cacheSize; 
     unsigned int blockSize; 
 
-    while ((opt = getopt(argc, argv, "f:c:b:h")) != -1){
+    while ((opt = getopt(argc, argv, "f:c:b:hn")) != -1){
 
         switch (opt){
             case 'f':
@@ -46,6 +46,9 @@ int main(int argc, char** argv) {
                     blockSize = atoi(optarg);
                     barg = true;
                 }
+                break;
+            case 'n':
+                compress = false;
                 break;
             case 'h':
                 usage();
@@ -75,7 +78,7 @@ int main(int argc, char** argv) {
     
 
     std::cout << "Loading matrix..." << std::endl;
-    mat<float> smtx(filename , blockSize, DENSE);
+    mat<float> smtx(filename , blockSize, DENSE, compress);
 
     std::cout << "Number of rows : " << smtx.getNRows() << std::endl;
     std::cout << "Number of cols: " << smtx.getNCols() << std::endl;
@@ -95,6 +98,6 @@ int main(int argc, char** argv) {
 
 
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(end- start).count();
-
+    std::cout << "Result is : " << result << std::endl;
     std::cout << "Execution time : " << duration << " seconds" <<  std::endl;
 }
