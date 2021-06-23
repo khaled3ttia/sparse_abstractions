@@ -17,10 +17,10 @@ void usage(){
 int main(int argc, char** argv) {
 
     int opt; 
-    std::string filename;
-    bool farg, carg,barg, compress = true;
-    unsigned int cacheSize; 
-    unsigned int blockSize; 
+    static std::string filename;
+    static bool farg,carg,barg, compress = true;
+    static unsigned int cacheSize; 
+    static unsigned int blockSize; 
 
 
     // Reading command line arguments
