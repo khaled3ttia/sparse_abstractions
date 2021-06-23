@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
     auto end = std::chrono::high_resolution_clock::now();
 
 
-    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end- start).count();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end- start).count();
     std::cout << "Result is : " << result << std::endl;
-    std::cout << "Execution time : " << duration << " seconds" <<  std::endl;
+    std::cout << "Execution time : " << duration << " milliseconds" <<  std::endl;
 }
