@@ -202,6 +202,7 @@ mat<T>::mat(std::string matFile, int blockSizeRows, format mtFormat, bool compre
     _nMatrices++;
 
     if (compress){
+         std::cout << "Doing Compression .. " << std::endl; 
          if (_mtFormat == DENSE){
             compressByRow(true);     
         }
@@ -300,14 +301,17 @@ T& mat<T>::operator () (int rowIdx, int colIdx) {
 
 template <typename T>
 T& mat<T>::operator [] (int flatIdx){
-
-    assert(flatIdx < _nrows * _ncols);
     
-    if (_mtFormat == COO){
+    assert(flatIdx < _nrows * _ncols);
+    if (__builtin_expect(_mtFormat == COO, 0)){
 
         cooToDense();
     }
-
+    if (_isCompressed){
+        int rowIdx = flatIdx / _nrows; 
+        int colIdx = (flatIdx % _ncols);
+        return getCompressedElement(rowIdx, colIdx);
+    }
     return _ddata[flatIdx];
 
 }
@@ -639,7 +643,6 @@ void mat<T>::compressByRow(bool removeOriginal) {
         int blockOffset = 0; 
 
         T* block = new T[_ncols*_blockSizeRows];
-
         for (int i = 0 ; i < nBlocks; i++){
 
 

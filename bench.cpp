@@ -1,6 +1,13 @@
 #include "mat.h"
-#include <chrono>
+#include <sys/time.h>
 #include <unistd.h>
+
+
+double timeit(){
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return ( (double) tv.tv_sec + (double) tv.tv_usec * 1.e-6);
+}
 
 void usage(){
     std::cout << "Options: " << std::endl;
@@ -9,10 +16,12 @@ void usage(){
     std::cout << " -c <cacheSize> : size of the software cache (in blocks)" << std::endl;
     std::cout << " -b <blockSize> : number of rows per block" << std::endl;
     std::cout << " -h : prints usgae information" << std::endl;
-    std::cout << " -n : don't compress martices" << std::endl;
     std::cout << "Example: " << std::endl;
     std::cout << "./bench.exe -f data/fidap001.mtx -c 32 - b 2" << std::endl;
 }
+
+static double t[5] = {0};
+
 
 int main(int argc, char** argv) {
 
@@ -24,7 +33,7 @@ int main(int argc, char** argv) {
 
 
     // Reading command line arguments
-    while ((opt = getopt(argc, argv, "f:c:b:hn")) != -1){
+    while ((opt = getopt(argc, argv, "f:c:b:h")) != -1){
         switch (opt){
             case 'f':
                 if (optarg){
@@ -48,9 +57,6 @@ int main(int argc, char** argv) {
                     barg = true;
                 }
                 break;
-            case 'n':
-                compress = false;
-                break;
             case 'h':
                 usage();
                 break;
@@ -73,34 +79,53 @@ int main(int argc, char** argv) {
     std::cout << "MTX file path: " << filename << std::endl;
     std::cout << "Cache size: " << cacheSize << " blocks" << std::endl;
     std::cout << "Block Size (Rows per block) : " << blockSize << std::endl;
+#ifdef NOCOMPRESS 
+    std::cout << "No compression to be done (Cache size and block size are ignored)!" << std::endl;
+#endif
 
-
-    float result = 0;
-
-    mat<float>::setCacheSize(cacheSize);
+    mat<double>::setCacheSize(cacheSize);
     
 
     std::cout << "Loading matrix..." << std::endl;
-    mat<float> smtx(filename , blockSize, DENSE, compress);
+
+#ifdef NOCOMPRESS
+    mat<double> smtx(filename, blockSize, DENSE, false);
+#else
+    mat<double> smtx(filename, blockSize, DENSE, true);
+#endif
+
 
     std::cout << "Number of rows : " << smtx.getNRows() << std::endl;
     std::cout << "Number of cols: " << smtx.getNCols() << std::endl;
 
     std::cout << "Running Benchmark .... " << std::endl;
 
-    auto start = std::chrono::high_resolution_clock::now();
+           
+    int nrows = smtx.getNRows();
+    int ncols = smtx.getNCols();
 
-    for (int i = 0; i < smtx.getNRows() ; i++){
-
-        for (int j = 0 ; j < smtx.getNCols(); j++){
-            result += smtx(i, j);
-        }
+    ssize_t nelements = nrows * ncols; 
+    double bytes = sizeof(double) * nelements;
+    ssize_t j;
+    for (int i = 0 ; i < 5 ; i++){
+        double result = 0.;
+        t[i] = timeit();
+#ifdef NOCOMPRESS
+#   pragma omp parallel for reduction (+:result)
+#endif
+        for (j  = 0 ; j < nelements; j++){
+            result = result +  smtx[j];
+        } 
+        t[i] = timeit() - t[i];    
+        std::cout << "Result : " << result << std::endl;
     }
 
-    auto end = std::chrono::high_resolution_clock::now();
+    double avgTime = 0;
+    for (int i = 0; i < 5 ; i++){
+        avgTime = avgTime + t[i];
+    }
+    avgTime = avgTime / 5;
 
-
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end- start).count();
-    std::cout << "Result is : " << result << std::endl;
-    std::cout << "Execution time : " << duration << " milliseconds" <<  std::endl;
+    std::cout << "Average Execution time : " << avgTime << " seconds" << std::endl;
+    std::cout << "Memory Bandwidth: " << bytes * 1.0E-06 / avgTime << " MB/s" << std::endl;
 }
