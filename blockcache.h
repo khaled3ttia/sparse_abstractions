@@ -27,8 +27,8 @@ class Block{
 
     public:
     Block(){}; 
-    Block(T*&);
-    Block(T*&, int);
+    Block(T*);
+    Block(T*, int);
     void setSize(int);
     int getSize(); 
     void access();
@@ -36,7 +36,7 @@ class Block{
     int getInsertTime();
 
     // Not safe? 
-    T*& getData();
+    T* getData();
 
     T& operator [](int);
 };
@@ -67,6 +67,8 @@ class BlockCache{
 
     BlockCache(int, replacementPolicy);
 
+    void flushCache() { _cache.clear(); }
+
     int getMaxSize();
 
     void setMaxSize(int);
@@ -87,10 +89,10 @@ class BlockCache{
 
     // Not safe?
     //T*& access(BlockId);
-    T*& access(int);
+    T* access(int);
 
     //T*& access(typename std::map<BlockId, Block<T>, IDCompare>::iterator);
-    T*& access(typename std::map<int, Block<T>>::iterator);
+    T* access(typename std::map<int, Block<T>>::iterator);
 };
 
 #include "blockcache_impl.h"

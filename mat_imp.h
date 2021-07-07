@@ -251,7 +251,7 @@ T& mat<T>::getCompressedElement(int rowIdx, int colIdx){
     T * data;
     if (it != _Cache.getEnd()){
         // Cache hit 
-        data = _Cache.access(it); 
+        return _Cache.access(it)[rowWithinBlock * _ncols + colIdx]; 
 
 
     }else {
@@ -267,12 +267,12 @@ T& mat<T>::getCompressedElement(int rowIdx, int colIdx){
 
         _Cache.insert(bid, b);
 
-        data = b.getData();
+        return b.getData()[rowWithinBlock * _ncols + colIdx];
     }
 
        //delete [] block;
 
-    return data[rowWithinBlock * _ncols + colIdx];
+    //return data[rowWithinBlock * _ncols + colIdx];
 
     //return block[rowWithinBlock * _ncols + colIdx]; 
 

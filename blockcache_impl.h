@@ -115,7 +115,7 @@ T*& BlockCache<T>::access(BlockId bid){
 */
 
 template<typename T>
-T*& BlockCache<T>::access(int bid){
+T* BlockCache<T>::access(int bid){
 
     auto it = _cache.find(bid);
 
@@ -139,7 +139,7 @@ T*& BlockCache<T>::access(typename std::map<BlockId, Block<T>,IDCompare>::iterat
 */
 
 template<typename T>
-T*& BlockCache<T>::access(typename std::map<int, Block<T>>::iterator it){
+T* BlockCache<T>::access(typename std::map<int, Block<T>>::iterator it){
 
     it->second.access(); 
     return it->second.getData();
@@ -160,7 +160,7 @@ typename std::map<int, Block<T>>::iterator BlockCache<T>::find(int bid){
 
 
 template<typename T>
-Block<T>::Block(T*& src){
+Block<T>::Block(T* src){
     
     if (!_dataAllocated){
         _data = new T[_size];
@@ -173,15 +173,18 @@ Block<T>::Block(T*& src){
 }
 
 template<typename T>
-Block<T>::Block(T*& src, int size){
+Block<T>::Block(T* src, int size){
     _size = size;
     if (!_dataAllocated){
-        _data = new T[size];
+        //_data = new T[size];
+        _data = src;
         _dataAllocated = true;
     }
+    /*
     for (int i = 0; i < size; i++){
         _data[i] = src[i];
     }
+    */
 }
 
 template<typename T>
@@ -202,7 +205,7 @@ void Block<T>::access() {
 }
 
 template<typename T>
-T*& Block<T>::getData(){
+T* Block<T>::getData(){
     return _data;
 }
 
