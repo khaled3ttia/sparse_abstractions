@@ -110,9 +110,6 @@ int main(int argc, char** argv) {
     for (int i = 0 ; i < 5 ; i++){
         double result = 0.;
         t[i] = timeit();
-#ifdef NOCOMPRESS
-#   pragma omp parallel for reduction (+:result)
-#endif
         for (j  = 0 ; j < nelements; j++){
             result = result +  smtx[j];
         } 
