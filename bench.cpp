@@ -118,6 +118,8 @@ int main(int argc, char** argv) {
         } 
         t[i] = timeit() - t[i];    
         std::cout << "Result : " << result << std::endl;
+
+        mat<double>::_Cache.flushCache();
     }
 
     double avgTime = 0;
