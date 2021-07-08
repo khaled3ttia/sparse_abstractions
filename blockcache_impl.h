@@ -98,6 +98,10 @@ size_t BlockCache<T>::remove(int bid){
     return _cache.erase(bid);
 }
 
+template<typename T>
+Block<T>& BlockCache<T>::operator[](int bid){
+    return _cache[bid];
+}
 /*
 template<typename T>
 T*& BlockCache<T>::access(BlockId bid){
@@ -218,6 +222,13 @@ void Block<T>::setInsertTime(int val){
 template<typename T>
 int Block<T>::getInsertTime(){
     return _insertTime;
+}
+
+template<typename T>
+void Block<T>::setData(std::string *src){
+
+    _data = (T*)src->c_str();
+    _dataAllocated = true;
 }
 
 template<typename T>

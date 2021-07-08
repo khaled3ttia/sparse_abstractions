@@ -236,9 +236,6 @@ mat<T>::mat(const mat<T> & rhs) : _ncols(rhs._ncols), _nrows(rhs._nrows), _nnz(r
 template <typename T>
 T& mat<T>::getCompressedElement(int rowIdx, int colIdx){
 
-    // TODO: this should return a reference to the element
-    // in the uncompressed block in cache
-
     int blockId = floor(rowIdx / _blockSizeRows);
     int rowWithinBlock = rowIdx % _blockSizeRows;
 
@@ -248,35 +245,18 @@ T& mat<T>::getCompressedElement(int rowIdx, int colIdx){
 
     auto it = _Cache.find(bid);
 
-    T * data;
     if (it != _Cache.getEnd()){
         // Cache hit 
         return _Cache.access(it)[rowWithinBlock * _ncols + colIdx]; 
-
-
     }else {
-        // Cache Miss
-        std::string uncompressedBlock;
-
-        snappy::Uncompress(_compressedData[blockId].data(), _compressedData[blockId].size(), &uncompressedBlock);
-
-        T* block = (T*)uncompressedBlock.c_str();
-
-        //Block<T> b(block, _ncols * _blockSizeRows * sizeof(T));
-        Block<T> b(block, _ncols * _blockSizeRows);
-
-        _Cache.insert(bid, b);
-
-        return b.getData()[rowWithinBlock * _ncols + colIdx];
+        std::string* uncompressedBlock = new std::string;
+        _Cache.insert(bid, Block<T>());
+        snappy::Uncompress(_compressedData[blockId].data(), _compressedData[blockId].size(), uncompressedBlock);
+       _Cache[bid].setData(uncompressedBlock);
+        delete uncompressedBlock;
+       
+        return _Cache[bid].getData()[rowWithinBlock * _ncols + colIdx];
     }
-
-       //delete [] block;
-
-    //return data[rowWithinBlock * _ncols + colIdx];
-
-    //return block[rowWithinBlock * _ncols + colIdx]; 
-
-
 }
 
 // Overloading the () operator

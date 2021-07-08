@@ -20,10 +20,11 @@ struct IDCompare{
 template<typename T>
 class Block{
     int _size;
-    T* _data;
     bool _dataAllocated = false;
     int _accessCount = 0;
     int _insertTime;
+    T* _data;
+
 
     public:
     Block(){}; 
@@ -34,11 +35,12 @@ class Block{
     void access();
     void setInsertTime(int);
     int getInsertTime();
-
+    void setData(std::string*);
     // Not safe? 
     T* getData();
 
     T& operator [](int);
+
 };
 
 template<typename T>
@@ -80,6 +82,8 @@ class BlockCache{
 
     //size_t remove(BlockId);
     size_t remove(int);
+
+    Block<T>& operator[](int);
 
     //typename std::map<BlockId, Block<T>, IDCompare>::iterator find(BlockId);
     typename std::map<int, Block<T>>::iterator find(int);
