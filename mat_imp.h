@@ -503,6 +503,11 @@ mat<T>::~mat<T>(){
         delete [] _cooRowIdx; 
     }
 
+
+    if (_isCompressed){
+        delete [] _compressedData;
+    }
+
 }
 
 
