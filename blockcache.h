@@ -24,10 +24,10 @@ class Block{
     int _accessCount = 0;
     int _insertTime;
     T* _data;
-
+    std::string* _decompressedStr;
 
     public:
-    Block(){}; 
+    Block(){ _decompressedStr = new std::string; }; 
     Block(T*);
     Block(T*, int);
     void setSize(int);
@@ -35,12 +35,14 @@ class Block{
     void access();
     void setInsertTime(int);
     int getInsertTime();
-    void setData(std::string*);
+    void setData();
     // Not safe? 
     T* getData();
+    std::string* getDecompressedStr();
 
     T& operator [](int);
 
+    ~Block();
 };
 
 template<typename T>
@@ -59,7 +61,7 @@ class BlockCache{
 
     // The actual cache
     //std::map<BlockId, Block<T>, IDCompare> _cache;
-    std::map<int, Block<T>> _cache;
+    std::map<int, Block<T>*> _cache;
 
     public:
 
@@ -69,7 +71,7 @@ class BlockCache{
 
     BlockCache(int, replacementPolicy);
 
-    void flushCache() { _cache.clear(); }
+    void flushCache(); 
 
     int getMaxSize();
 
@@ -78,7 +80,7 @@ class BlockCache{
     int getSize();
 
     //bool insert(BlockId, Block<T>);
-    bool insert(int, Block<T>);
+    bool insert(int, Block<T>*);
 
     //size_t remove(BlockId);
     size_t remove(int);
@@ -86,17 +88,20 @@ class BlockCache{
     Block<T>& operator[](int);
 
     //typename std::map<BlockId, Block<T>, IDCompare>::iterator find(BlockId);
-    typename std::map<int, Block<T>>::iterator find(int);
+    typename std::map<int, Block<T>*>::iterator find(int);
 
     //typename std::map<BlockId, Block<T>, IDCompare>::iterator getEnd() { return _cache.end(); };
-    typename std::map<int, Block<T>>::iterator getEnd() { return _cache.end(); };
+    typename std::map<int, Block<T>*>::iterator getEnd() { return _cache.end(); };
 
     // Not safe?
     //T*& access(BlockId);
     T* access(int);
 
     //T*& access(typename std::map<BlockId, Block<T>, IDCompare>::iterator);
-    T* access(typename std::map<int, Block<T>>::iterator);
+    T* access(typename std::map<int, Block<T>*>::iterator);
+    
+    ~BlockCache();
+
 };
 
 #include "blockcache_impl.h"

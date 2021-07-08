@@ -54,7 +54,7 @@ bool BlockCache<T>::insert(BlockId bid, Block<T> block){
 }
 */
 template<typename T>
-bool BlockCache<T>::insert(int bid, Block<T> block){
+bool BlockCache<T>::insert(int bid, Block<T>* block){
     
     assert(_size > 0);
     
@@ -62,7 +62,7 @@ bool BlockCache<T>::insert(int bid, Block<T> block){
     // Record insetion order 
     _insertions++; 
 
-    block.setInsertTime(_insertions); 
+    block->setInsertTime(_insertions); 
 
     if (_cache.size() < _size){
          _cache.insert(std::make_pair(bid, block));
@@ -75,7 +75,7 @@ bool BlockCache<T>::insert(int bid, Block<T> block){
         auto it = std::next(oldest);
 
         while (it != _cache.end()){
-            if (it->second.getInsertTime() < oldest->second.getInsertTime()){
+            if (it->second->getInsertTime() < oldest->second->getInsertTime()){
                 oldest = it;
             }
             it++;
@@ -100,7 +100,7 @@ size_t BlockCache<T>::remove(int bid){
 
 template<typename T>
 Block<T>& BlockCache<T>::operator[](int bid){
-    return _cache[bid];
+    return *(_cache[bid]);
 }
 /*
 template<typename T>
@@ -143,7 +143,7 @@ T*& BlockCache<T>::access(typename std::map<BlockId, Block<T>,IDCompare>::iterat
 */
 
 template<typename T>
-T* BlockCache<T>::access(typename std::map<int, Block<T>>::iterator it){
+T* BlockCache<T>::access(typename std::map<int, Block<T>*>::iterator it){
 
     it->second.access(); 
     return it->second.getData();
@@ -158,10 +158,35 @@ typename std::map<BlockId, Block<T>, IDCompare>::iterator BlockCache<T>::find(Bl
 */
 
 template<typename T>
-typename std::map<int, Block<T>>::iterator BlockCache<T>::find(int bid){
+typename std::map<int, Block<T>*>::iterator BlockCache<T>::find(int bid){
     return _cache.find(bid);
 }
 
+template<typename T>
+void BlockCache<T>::flushCache(){
+    auto it = _cache.begin();
+    while (it != _cache.end()){
+        //it->second->~Block();
+
+        delete it->second;
+
+        it++;
+    }
+    _cache.clear();
+}
+
+template<typename T>
+BlockCache<T>::~BlockCache(){
+
+    auto it = _cache.begin();
+    while (it != _cache.end()){
+       
+        delete it->second;
+        it++;
+
+    }
+
+}
 
 template<typename T>
 Block<T>::Block(T* src){
@@ -225,10 +250,15 @@ int Block<T>::getInsertTime(){
 }
 
 template<typename T>
-void Block<T>::setData(std::string *src){
+void Block<T>::setData(){
 
-    _data = (T*)src->c_str();
+    _data = (T*)_decompressedStr->c_str();
     _dataAllocated = true;
+}
+
+template<typename T>
+std::string* Block<T>::getDecompressedStr(){
+    return _decompressedStr;
 }
 
 template<typename T>
@@ -239,4 +269,11 @@ T& Block<T>::operator [](int idx){
     assert(_dataAllocated);
 
     return _data[idx];
+}
+
+template<typename T>
+Block<T>::~Block(){
+    //delete _data;
+    delete _decompressedStr;
+    //delete _data;
 }
