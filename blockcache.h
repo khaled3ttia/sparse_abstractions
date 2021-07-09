@@ -28,8 +28,6 @@ class Block{
 
     public:
     Block(){ _decompressedStr = new std::string; }; 
-    Block(T*);
-    Block(T*, int);
     void setSize(int);
     int getSize(); 
     void access();
@@ -52,6 +50,7 @@ class BlockCache{
     // to serve as an insertion timestamp for the block   
     int _insertions;
 
+    int _deletions;
     // Cache size in BLOCKS
     // TODO: change to KB ? 
     int _size = 32;
@@ -99,7 +98,9 @@ class BlockCache{
 
     //T*& access(typename std::map<BlockId, Block<T>, IDCompare>::iterator);
     T* access(typename std::map<int, Block<T>*>::iterator);
-    
+   
+    void printInfo();
+
     ~BlockCache();
 
 };

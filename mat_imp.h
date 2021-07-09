@@ -247,16 +247,13 @@ T& mat<T>::getCompressedElement(int rowIdx, int colIdx){
 
     if (it != _Cache.getEnd()){
         // Cache hit 
-        return _Cache[bid].getData()[rowWithinBlock * _ncols + colIdx]; 
+        return _Cache[bid][rowWithinBlock * _ncols + colIdx]; 
     }else {
-        //std::string* uncompressedBlock = new std::string;
         _Cache.insert(bid, new Block<T>);
-        //_Cache[bid].getDecompressedStr() = new std::string;
         snappy::Uncompress(_compressedData[blockId].data(), _compressedData[blockId].size(), _Cache[bid].getDecompressedStr());
-       _Cache[bid].setData();
-        //delete uncompressedBlock;
+        _Cache[bid].setData();
        
-        return _Cache[bid].getData()[rowWithinBlock * _ncols + colIdx];
+        return _Cache[bid][rowWithinBlock * _ncols + colIdx];
     }
 }
 

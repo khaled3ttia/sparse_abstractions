@@ -16,6 +16,7 @@ void usage(){
     std::cout << " -c <cacheSize> : size of the software cache (in blocks)" << std::endl;
     std::cout << " -b <blockSize> : number of rows per block" << std::endl;
     std::cout << " -h : prints usgae information" << std::endl;
+    std::cout << " -p : prints blockcache summary" << std::endl;
     std::cout << "Example: " << std::endl;
     std::cout << "./bench.exe -f data/fidap001.mtx -c 32 - b 2" << std::endl;
 }
@@ -27,13 +28,13 @@ int main(int argc, char** argv) {
 
     int opt; 
     static std::string filename;
-    static bool farg,carg,barg, compress = true;
+    static bool farg,carg,barg, parg;
     static unsigned int cacheSize; 
     static unsigned int blockSize; 
 
 
     // Reading command line arguments
-    while ((opt = getopt(argc, argv, "f:c:b:h")) != -1){
+    while ((opt = getopt(argc, argv, "f:c:b:hp")) != -1){
         switch (opt){
             case 'f':
                 if (optarg){
@@ -56,6 +57,9 @@ int main(int argc, char** argv) {
                     blockSize = atoi(optarg);
                     barg = true;
                 }
+                break;
+            case 'p':
+                parg=true;
                 break;
             case 'h':
                 usage();
@@ -115,7 +119,12 @@ int main(int argc, char** argv) {
         } 
         t[i] = timeit() - t[i];    
         std::cout << "Result : " << result << std::endl;
-
+        if (i == 4){
+            if (parg){
+                mat<double>::_Cache.printInfo();
+            }
+        }
+        
         mat<double>::_Cache.flushCache();
     }
 
