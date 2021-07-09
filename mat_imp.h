@@ -96,7 +96,7 @@ mat<T>::mat(int nrows, int ncols, int nnz, T *& coovals, int *& cooRowIdx, int *
 
 // Constructor that loads the matrix from a mtx file, using the specified format
 template <typename T>
-mat<T>::mat(std::string matFile, int blockSizeRows, format mtFormat, bool compress): _blockSizeRows(blockSizeRows), _mtFormat(mtFormat){
+mat<T>::mat(std::string matFile, int blockSizeRows, format mtFormat, bool compress, bool useCompressed): _blockSizeRows(blockSizeRows), _mtFormat(mtFormat), _useCompressed(useCompressed){
    
 
     _id = _nMatrices;
@@ -204,7 +204,7 @@ mat<T>::mat(std::string matFile, int blockSizeRows, format mtFormat, bool compre
     if (compress){
          std::cout << "Doing Compression .. " << std::endl; 
          if (_mtFormat == DENSE){
-            compressByRow(true);     
+            compressByRow(false);     
         }
     }
    
@@ -270,7 +270,7 @@ T& mat<T>::operator () (int rowIdx, int colIdx) {
         cooToDense();
     }
     
-    if (_isCompressed){
+    if (_isCompressed && _useCompressed){
         return getCompressedElement(rowIdx, colIdx);
      
         
@@ -288,7 +288,7 @@ T& mat<T>::operator [] (int flatIdx){
 
         cooToDense();
     }
-    if (_isCompressed){
+    if (_isCompressed && _useCompressed){
         int rowIdx = flatIdx / _nrows; 
         int colIdx = (flatIdx % _ncols);
         return getCompressedElement(rowIdx, colIdx);

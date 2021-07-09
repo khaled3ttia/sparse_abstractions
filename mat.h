@@ -41,6 +41,7 @@ class mat {
     // compression related
     bool _isCompressed = false;
     size_t _blockSizeRows = 2;
+    bool _useCompressed = false;
 
     void compressByRow(bool = true);
 
@@ -64,7 +65,7 @@ class mat {
     //mat(int, int, int, T *&, int *&, int *&);
     
     // Read a matrix from a mtx file using the specified format 
-    mat(std::string, int=2,  format=DENSE, bool=true);
+    mat(std::string, int=2,  format=DENSE, bool=true, bool=false);
    
 
     // copy constructor 

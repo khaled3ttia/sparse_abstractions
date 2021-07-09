@@ -89,9 +89,9 @@ int main(int argc, char** argv) {
     std::cout << "Loading matrix..." << std::endl;
 
 #ifdef NOCOMPRESS
-    mat<double> smtx(filename, blockSize, DENSE, false);
+    mat<double> smtx(filename, blockSize, DENSE, true, false);
 #else
-    mat<double> smtx(filename, blockSize, DENSE, true);
+    mat<double> smtx(filename, blockSize, DENSE, true, true);
 #endif
 
 
