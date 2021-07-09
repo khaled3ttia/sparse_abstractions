@@ -1,3 +1,4 @@
+#include <string.h>
 #include "mat.h"
 #include <sys/time.h>
 #include <unistd.h>
@@ -17,24 +18,25 @@ void usage(){
     std::cout << " -b <blockSize> : number of rows per block" << std::endl;
     std::cout << " -h : prints usgae information" << std::endl;
     std::cout << " -p : prints blockcache summary" << std::endl;
+    std::cout << " -n : number of iterations for the benchmark" << std::endl;
     std::cout << "Example: " << std::endl;
     std::cout << "./bench.exe -f data/fidap001.mtx -c 32 - b 2" << std::endl;
 }
 
-static double t[5] = {0};
+
 
 
 int main(int argc, char** argv) {
 
     int opt; 
     static std::string filename;
-    static bool farg,carg,barg, parg;
+    static bool farg,carg,barg, narg, parg;
     static unsigned int cacheSize; 
     static unsigned int blockSize; 
-
+    static unsigned int N;
 
     // Reading command line arguments
-    while ((opt = getopt(argc, argv, "f:c:b:hp")) != -1){
+    while ((opt = getopt(argc, argv, "f:c:b:n:hp")) != -1){
         switch (opt){
             case 'f':
                 if (optarg){
@@ -58,6 +60,13 @@ int main(int argc, char** argv) {
                     barg = true;
                 }
                 break;
+            case 'n':
+                if (optarg){
+
+                    N = atoi(optarg);
+                    narg = true;
+                }
+                break;
             case 'p':
                 parg=true;
                 break;
@@ -71,7 +80,7 @@ int main(int argc, char** argv) {
 
     // Setting default values
     if (!farg){
-        filename = "data/fidap011.mtx";        
+        filename = "data/saylr3.mtx";        
     }
     if (!carg){
         cacheSize = 32;
@@ -79,7 +88,13 @@ int main(int argc, char** argv) {
     if (!barg){
         blockSize = 2; 
     }
+    if (!narg){
+        N = 5;
+    }
 
+    double* t = new double[N]; 
+    memset(t, 0, N*sizeof(*t));
+    
     std::cout << "MTX file path: " << filename << std::endl;
     std::cout << "Cache size: " << cacheSize << " blocks" << std::endl;
     std::cout << "Block Size (Rows per block) : " << blockSize << std::endl;
@@ -111,15 +126,15 @@ int main(int argc, char** argv) {
     ssize_t nelements = nrows * ncols; 
     double bytes = sizeof(double) * nelements;
     ssize_t j;
-    for (int i = 0 ; i < 5 ; i++){
+    for (int i = 0 ; i < N ; i++){
         double result = 0.;
         t[i] = timeit();
         for (j  = 0 ; j < nelements; j++){
             result = result +  smtx[j];
         } 
         t[i] = timeit() - t[i];    
-        std::cout << "Result : " << result << std::endl;
-        if (i == 4){
+        //std::cout << "Result : " << result << std::endl;
+        if (i == N-1){
             if (parg){
                 mat<double>::_Cache.printInfo();
             }
@@ -129,11 +144,14 @@ int main(int argc, char** argv) {
     }
 
     double avgTime = 0;
-    for (int i = 0; i < 5 ; i++){
+    for (int i = 0; i < N ; i++){
         avgTime = avgTime + t[i];
     }
-    avgTime = avgTime / 5;
+    avgTime = avgTime / N;
 
     std::cout << "Average Execution time : " << avgTime << " seconds" << std::endl;
     std::cout << "Memory Bandwidth: " << bytes * 1.0E-06 / avgTime << " MB/s" << std::endl;
+
+
+    delete[] t;
 }
