@@ -12,6 +12,10 @@ enum format {
     COO
 };
 
+enum compressMode {
+    ELEMENTS,
+    ROWS
+};
 
 template <typename T>
 class mat {
@@ -40,10 +44,12 @@ class mat {
     
     // compression related
     bool _isCompressed = false;
-    size_t _blockSizeRows = 2;
+    enum compressMode _cmode = ELEMENTS;
+    size_t _blockSize = 2000;
     bool _useCompressed = false;
 
     void compressByRow(bool = true);
+    void compressByElement(bool = true);
 
     void decompressByRow(bool = true);
 
@@ -65,7 +71,7 @@ class mat {
     //mat(int, int, int, T *&, int *&, int *&);
     
     // Read a matrix from a mtx file using the specified format 
-    mat(std::string, int=2,  format=DENSE, bool=true, bool=false);
+    mat(std::string, int=2,  format=DENSE, bool=true, bool=false, compressMode=ELEMENTS);
    
 
     // copy constructor 
