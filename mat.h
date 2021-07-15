@@ -1,11 +1,26 @@
+#include <sys/time.h>
 #include <iostream>
 #include <string>
-#include <fstream>
 #include <sstream>
+
+#ifndef USE_MMAP
+#include <fstream>
+#endif
+
+
+#ifdef USE_MMAP
+#include <streambuf>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#endif
+
 #include <assert.h>
 #include <cmath>
 #include "snappy.h"
 #include "blockcache.h"
+#include "utils.h"
 
 enum format {
     DENSE,
@@ -71,7 +86,7 @@ class mat {
     //mat(int, int, int, T *&, int *&, int *&);
     
     // Read a matrix from a mtx file using the specified format 
-    mat(std::string, int=2,  format=DENSE, bool=true, bool=false, compressMode=ELEMENTS);
+    mat(const char*, int=2,  format=DENSE, bool=true, bool=false, compressMode=ELEMENTS);
    
 
     // copy constructor 

@@ -96,8 +96,10 @@ mat<T>::mat(int nrows, int ncols, int nnz, T *& coovals, int *& cooRowIdx, int *
 
 // Constructor that loads the matrix from a mtx file, using the specified format
 template <typename T>
-mat<T>::mat(std::string matFile, int blockSize, format mtFormat, bool compress,  bool useCompressed, compressMode cmode): _blockSize(blockSize), _mtFormat(mtFormat), _useCompressed(useCompressed), _cmode(cmode){
-   
+mat<T>::mat(const char* matFile, int blockSize, format mtFormat, bool compress,  bool useCompressed, compressMode cmode): _blockSize(blockSize), _mtFormat(mtFormat), _useCompressed(useCompressed), _cmode(cmode){
+  
+    double startTime = timeit();
+
     _id = _nMatrices;
 
 
@@ -105,19 +107,51 @@ mat<T>::mat(std::string matFile, int blockSize, format mtFormat, bool compress, 
     int currentIndex = 0; 
 
     std::string line; 
-    std::ifstream mtx_file (matFile);
+#ifdef USE_MMAP
+    int fd = open(matFile, O_RDONLY);
+    if (fd == -1){
+        std::cerr << "Cannot open file!" << std::endl;
+        exit(-1);
+    }
+
+    struct stat sb;
+    if (fstat(fd, &sb) == -1){
+        std::cerr << "Cannot get file info!" << std::endl;
+        exit(-1);
+    }
+
+
+    size_t fileLen = sb.st_size;
+
+    //mmap file
+    char* filePtr = static_cast<char *>(mmap(NULL, fileLen, PROT_READ, MAP_PRIVATE, fd, 0u));
+
+    if (filePtr == MAP_FAILED){
+        std::cerr << "Unable to memory map file!" << std::endl;
+        exit(-1);
+    }
+      
+    
+    //streambuffer to handle mapped region
+    sbuffer buffer(filePtr, fileLen);
+    std::istream in(&buffer);
+#endif 
+
+#ifndef USE_MMAP
+    std::ifstream in (matFile);
     
   
-    if (!mtx_file){
+    if (!in){
         // file does not exist
-        return; 
+        std::cerr << "Cannot open file!" << std::endl;
+        exit(-1); 
 
     }
     
 
-    if (mtx_file.is_open()){
-        
-        while (std::getline(mtx_file, line)) {
+    if (in.is_open()){
+#endif        
+        while (std::getline(in, line)) {
             
             std::istringstream iss(line);
 
@@ -196,10 +230,22 @@ mat<T>::mat(std::string matFile, int blockSize, format mtFormat, bool compress, 
 
 
         }
+#ifndef USE_MMAP
     }
+#endif
 
+    double duration = timeit() - startTime;
+
+#ifdef USE_MMAP
+
+    close(fd);
+
+    int munmap_out = munmap(filePtr, fileLen);
+
+#endif 
     _nMatrices++;
 
+    std::cout << "Matrix loading time: " << duration << " seconds" << std::endl;
     std::cout << "Size before compression: " << _ncols * _nrows * sizeof(T) / (1e06) << " MB" << std::endl;
     if (compress){
          if (_mtFormat == DENSE){

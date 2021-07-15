@@ -1,14 +1,6 @@
 #include <string.h>
 #include "mat.h"
-#include <sys/time.h>
 #include <unistd.h>
-
-
-double timeit(){
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return ( (double) tv.tv_sec + (double) tv.tv_usec * 1.e-6);
-}
 
 void usage(){
     std::cout << "Options: " << std::endl;
@@ -30,7 +22,7 @@ void usage(){
 int main(int argc, char** argv) {
 
     int opt; 
-    static std::string filename;
+    static const char* filename;
     static bool farg,carg,barg, narg, parg;
     static unsigned int cacheSize; 
     static unsigned int blockSize; 
