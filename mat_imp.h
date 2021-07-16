@@ -5,6 +5,15 @@ template <typename T>
 int mat<T>::_nMatrices; 
 
 template <typename T>
+int mat<T>::_DecompressCallsCount = 0;
+
+template <typename T>
+double mat<T>::_DecompressTime = 0.0;
+
+template <typename T>
+double mat<T>::_InsertTime = 0.0;
+
+template <typename T>
 void mat<T>::setCacheSize(int val){
     _Cache.setMaxSize(val);
 }
@@ -300,8 +309,17 @@ T& mat<T>::getCompressedElement(int rowIdx, int colIdx){
             // Cache hit 
             return _Cache[bid][elemWithinBlock];
         }else {
+            double i_st = timeit();
             _Cache.insert(bid, new Block<T>);
+            _InsertTime = _InsertTime + (timeit() - i_st);
+
+            _DecompressCallsCount++;
+
+
+            double d_st = timeit();
             snappy::Uncompress(_compressedData[blockId].data(), _compressedData[blockId].size(), _Cache[bid].getDecompressedStr());
+            _DecompressTime = _DecompressTime + (timeit() - d_st);
+
             _Cache[bid].setData();
             return _Cache[bid][elemWithinBlock];
         }

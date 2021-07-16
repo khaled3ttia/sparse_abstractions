@@ -143,7 +143,7 @@ int main(int argc, char** argv) {
             }
         }
         
-        mat<double>::_Cache.flushCache();
+        //mat<double>::_Cache.flushCache();
     }
     
     double avgTime = 0;
@@ -155,7 +155,12 @@ int main(int argc, char** argv) {
     std::cout << "Average Execution time : " << avgTime << " seconds" << std::endl;
     std::cout << "Memory Bandwidth: " << bytes * 1.0E-06 / avgTime << " MB/s" << std::endl;
 
+    std::cout << "Number of calls to decompression function :" << mat<double>::_DecompressCallsCount << std::endl;
 
+    std::cout << "Total time spent in decompression : " << mat<double>::_DecompressTime << std::endl; 
+    
+    std::cout << "Total time spent in blockcache insertions: " << mat<double>::_InsertTime << std::endl;
+    
     delete[] t;
     
 }

@@ -34,17 +34,21 @@ bool BlockCache<T>::insert(int bid, Block<T>* block){
         // TODO: implement other replacement policies here
                 
         auto oldest = _cache.begin();
+
+        /*
         auto it = std::next(oldest);
+
+
         while (it != _cache.end()){
+            // This comparsion is a hotspot 
             if (it->second->getInsertTime() < oldest->second->getInsertTime()){
                 oldest = it;
             }
             it++;
         }
-
+        */
         BlockCache<T>::remove(oldest->first);
         BlockCache<T>::insert(bid, block);
-        return true;
     }
     return false;
 }

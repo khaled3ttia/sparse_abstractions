@@ -74,6 +74,9 @@ class mat {
     
     static BlockCache<T> _Cache;
     static int _nMatrices;
+    static int _DecompressCallsCount;
+    static double _DecompressTime;
+    static double _InsertTime;
     static void setCacheSize(int);
     
     mat();
