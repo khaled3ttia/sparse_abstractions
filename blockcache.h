@@ -61,6 +61,9 @@ template <typename T> class BlockCache {
   // std::map<BlockId, Block<T>, IDCompare> _cache;
   std::unordered_map<int, Block<T>> _cache;
 
+  typename std::unordered_map<int, Block<T>>::iterator _lastAccPtr;
+  int _lastAccId = -1;
+
 public:
   BlockCache(){};
 

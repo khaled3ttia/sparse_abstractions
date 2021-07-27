@@ -50,7 +50,15 @@ template <typename T> size_t BlockCache<T>::remove(int bid) {
 }
 
 template <typename T> Block<T> &BlockCache<T>::operator[](const int bid) {
-  return _cache[bid];
+
+    if (bid == _lastAccId){
+
+        return _lastAccPtr->second;
+    }
+    auto it = _cache.find(bid);
+    _lastAccPtr = it; 
+    _lastAccId = bid;
+    return it->second;
 }
 
 template <typename T> T *BlockCache<T>::access(int bid) {
