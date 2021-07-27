@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
     double bytes = sizeof(double) * nelements;
     ssize_t j;
     for (int i = 0 ; i < N ; i++){
-        double result = 0.;
+        volatile double result = 0.;
         t[i] = timeit();
         for (j  = 0 ; j < nrows; j++){
             ssize_t k;
