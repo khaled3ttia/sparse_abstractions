@@ -80,7 +80,7 @@ T* BlockCache<T>::access(int bid){
 }
 
 template<typename T>
-T* BlockCache<T>::access(typename std::map<int, Block<T>*>::iterator it){
+T* BlockCache<T>::access(typename std::unordered_map<int, Block<T>*>::iterator it){
 
     it->second.access(); 
     return it->second.getData();
@@ -88,7 +88,7 @@ T* BlockCache<T>::access(typename std::map<int, Block<T>*>::iterator it){
 } 
 
 template<typename T>
-typename std::map<int, Block<T>*>::iterator BlockCache<T>::find(int bid){
+typename std::unordered_map<int, Block<T>*>::iterator BlockCache<T>::find(int bid){
     return _cache.find(bid);
 }
 
