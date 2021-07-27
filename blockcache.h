@@ -1,3 +1,7 @@
+#ifndef BLOCKCACHE_H
+#define BLOCKCACHE_H
+
+
 #include <map>
 
 enum replacementPolicy {
@@ -106,3 +110,5 @@ class BlockCache{
 };
 
 #include "blockcache_impl.h"
+
+#endif

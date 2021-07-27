@@ -1,3 +1,6 @@
+#ifndef MAT_H
+#define MAT_H
+
 #include <sys/time.h>
 #include <iostream>
 #include <string>
@@ -137,3 +140,5 @@ class mat {
 
 // Implementation 
 #include "mat_imp.h"
+
+#endif
