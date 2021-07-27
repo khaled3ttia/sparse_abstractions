@@ -1,16 +1,15 @@
-CC=clang++
-HEADERDIR=/home/khaled/Documents/anl/snappy/
-SNAPPYBUILD=/home/khaled/Documents/anl/snappy/build
-CFLAGS=-std=c++11 -O3 -flto -march=native -g -I $(HEADERDIR) -I $(SNAPPYBUILD) -L $(SNAPPYBUILD) 
+CXX=clang++
+HEADERDIR=/home/khaled/snappy/
+SNAPPYBUILD=/home/khaled/snappy/build
+CXXFLAGS=-std=c++11 -fuse-ld=lld -O3 -flto -march=native -g -I $(HEADERDIR) -I $(SNAPPYBUILD) -L $(SNAPPYBUILD) 
 SFLAGS=-std=c++11 -O1 -g -fsanitize=address -fno-omit-frame-pointer -I $(HEADERDIR) -I $(SNAPPYBUILD) -L $(SNAPPYBUILD)
-nocompress:
-	$(CC) $(CFLAGS) -DNOCOMPRESS bench.cpp -lsnappy -o bench_nocompress.exe
-compress:
-	$(CC) $(CFLAGS) bench.cpp -lsnappy -o bench_compress.exe
-compress_mmap:
-	$(CC) $(CFLAGS) -DUSE_MMAP bench.cpp -lsnappy -o bench_compress_mmap.exe
-nocompress_mmap:
-	$(CC) $(CFLAGS) -DUSE_MMAP -DNOCOMPRESS  bench.cpp -lsnappy -o bench_nocompress_mmap.exe
+all: release debug
+debug:
+	$(CXX) $(CXXFLAGS) -DDEBUG -DUSE_MMAP bench.cpp -lsnappy -o debug_compress.exe
+	$(CXX) $(CXXFLAGS) -DNOCOMPRESS -DDEBUG -DUSE_MMAP bench.cpp -lsnappy -o debug_nocompress.exe
+release:
+	$(CXX) $(CXXFLAGS) -DUSE_MMAP bench.cpp -lsnappy -o compress.exe
+	$(CXX) $(CXXFLAGS) -DNOCOMPRESS -DUSE_MMAP bench.cpp -lsnappy -o nocompress.exe
 sanitize:
 	$(CC) $(SFLAGS) bench.cpp -lsnappy -o bench_sanitize.exe
 clean:
