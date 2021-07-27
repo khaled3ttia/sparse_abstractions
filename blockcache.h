@@ -27,6 +27,7 @@ template <typename T> class Block {
 
 public:
   Block() { _decompressedStr = new std::string; };
+  Block(T *);
   void setSize(int);
   int getSize();
   void access();
@@ -37,9 +38,9 @@ public:
   T *getData();
   std::string *getDecompressedStr();
 
-  T &operator[](int);
+  T &operator[](const int) const;
 
-  ~Block();
+  //~Block();
 };
 
 template <typename T> class BlockCache {
@@ -58,7 +59,7 @@ template <typename T> class BlockCache {
 
   // The actual cache
   // std::map<BlockId, Block<T>, IDCompare> _cache;
-  std::unordered_map<int, Block<T> *> _cache;
+  std::unordered_map<int, Block<T>> _cache;
 
 public:
   BlockCache(){};
@@ -76,19 +77,19 @@ public:
   int getSize();
 
   // bool insert(BlockId, Block<T>);
-  bool insert(int, Block<T> *);
+  bool insert(int, Block<T> &);
 
   // size_t remove(BlockId);
   size_t remove(int);
 
-  Block<T> &operator[](int);
+  Block<T> &operator[](const int);
 
   // typename std::map<BlockId, Block<T>, IDCompare>::iterator find(BlockId);
-  typename std::unordered_map<int, Block<T> *>::iterator find(int);
+  typename std::unordered_map<int, Block<T>>::iterator find(int);
 
   // typename std::map<BlockId, Block<T>, IDCompare>::iterator getEnd() { return
   // _cache.end(); };
-  typename std::unordered_map<int, Block<T> *>::iterator getEnd() {
+  typename std::unordered_map<int, Block<T>>::iterator getEnd() {
     return _cache.end();
   };
 
@@ -97,7 +98,7 @@ public:
   T *access(int);
 
   // T*& access(typename std::map<BlockId, Block<T>, IDCompare>::iterator);
-  T *access(typename std::unordered_map<int, Block<T> *>::iterator);
+  T *access(typename std::unordered_map<int, Block<T>>::iterator);
 
   void printInfo();
 

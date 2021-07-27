@@ -293,7 +293,8 @@ template <typename T> T &mat<T>::getCompressedElement(int rowIdx, int colIdx) {
       return _Cache[bid][elemWithinBlock];
     } else {
       double i_st = timeit();
-      _Cache.insert(bid, new Block<T>);
+      Block<T> newBlock{};
+      _Cache.insert(bid, newBlock);
       _InsertTime = _InsertTime + (timeit() - i_st);
 
       _DecompressCallsCount++;
@@ -321,7 +322,8 @@ template <typename T> T &mat<T>::getCompressedElement(int rowIdx, int colIdx) {
       // Cache hit
       return _Cache[bid][rowWithinBlock * _ncols + colIdx];
     } else {
-      _Cache.insert(bid, new Block<T>);
+      Block<T> newBlock{};
+      _Cache.insert(bid, newBlock);
       snappy::Uncompress(_compressedData[blockId].data(),
                          _compressedData[blockId].size(),
                          _Cache[bid].getDecompressedStr());
