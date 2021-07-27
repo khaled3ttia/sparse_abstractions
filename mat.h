@@ -53,8 +53,11 @@ template <typename T> class mat {
   // compression related
   bool _isCompressed = false;
   enum compressMode _cmode = ELEMENTS;
-  size_t _blockSize = 2000;
+  size_t _blockSize;
+  float _invBlockSize;
+
   bool _useCompressed = false;
+  bool _compElems = false;
 
   void compressByRow(bool = true);
   void compressByElement(bool = true);

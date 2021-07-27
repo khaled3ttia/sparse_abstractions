@@ -98,8 +98,8 @@ mat<T>::mat(int nrows, int ncols, int nnz, T *& coovals, int *& cooRowIdx, int
 template <typename T>
 mat<T>::mat(const char *matFile, int blockSize, format mtFormat, bool compress,
             bool useCompressed, compressMode cmode)
-    : _blockSize(blockSize), _mtFormat(mtFormat), _useCompressed(useCompressed),
-      _cmode(cmode) {
+    : _blockSize(blockSize), _invBlockSize(1.0 / blockSize),
+      _mtFormat(mtFormat), _useCompressed(useCompressed), _cmode(cmode) {
 
   double startTime = timeit();
 
@@ -244,12 +244,14 @@ mat<T>::mat(const char *matFile, int blockSize, format mtFormat, bool compress,
   if (compress) {
     if (_mtFormat == DENSE) {
       if (_cmode == ELEMENTS) {
-        compressByElement(_useCompressed);
+        compressByElement(false);
       } else {
-        compressByRow(_useCompressed);
+        compressByRow(false);
       }
     }
   }
+
+  _compElems = _isCompressed && _useCompressed;
 }
 
 template <typename T>
@@ -281,10 +283,9 @@ template <typename T> T &mat<T>::getCompressedElement(int rowIdx, int colIdx) {
   if (_cmode == ELEMENTS) {
 
     int flatIdx = rowIdx * _ncols + colIdx;
-    int blockId = flatIdx / _blockSize;
     int elemWithinBlock = flatIdx % _blockSize;
 
-    int bid = blockId;
+    int bid = (int)(flatIdx * _invBlockSize);
 
     auto it = _Cache.find(bid);
 
@@ -300,8 +301,8 @@ template <typename T> T &mat<T>::getCompressedElement(int rowIdx, int colIdx) {
       _DecompressCallsCount++;
 
       double d_st = timeit();
-      snappy::Uncompress(_compressedData[blockId].data(),
-                         _compressedData[blockId].size(),
+      snappy::Uncompress(_compressedData[bid].data(),
+                         _compressedData[bid].size(),
                          _Cache[bid].getDecompressedStr());
       _DecompressTime = _DecompressTime + (timeit() - d_st);
 
@@ -337,17 +338,14 @@ template <typename T> T &mat<T>::getCompressedElement(int rowIdx, int colIdx) {
 // Overloading the () operator
 template <typename T> T &mat<T>::operator()(int rowIdx, int colIdx) {
 
-  assert(rowIdx < _nrows && colIdx < _ncols);
+  // assert(rowIdx < _nrows && colIdx < _ncols);
 
   if (_mtFormat == COO) {
     cooToDense();
   }
 
-  if (_isCompressed && _useCompressed) {
-    return getCompressedElement(rowIdx, colIdx);
-  }
-
-  return _ddata[rowIdx * _ncols + colIdx];
+  return _compElems ? getCompressedElement(rowIdx, colIdx)
+                    : _ddata[rowIdx * _ncols + colIdx];
 }
 
 template <typename T> T &mat<T>::operator[](int flatIdx) {
