@@ -17,7 +17,7 @@ template <typename T> bool BlockCache<T>::insert(int bid, Block<T> &block) {
   if (_cache.size() < _size) {
     _insertions++;
     block.setInsertTime(_insertions);
-    _cache.insert(std::make_pair(bid, block));
+    _cache.emplace(bid, block);
     return true;
   } else {
 
