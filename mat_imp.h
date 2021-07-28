@@ -221,7 +221,7 @@ template <typename T> T &mat<T>::getCompressedElement(int rowIdx, int colIdx) {
       double d_st = timeit();
       snappy::Uncompress(_compressedData[bid].data(),
                          _compressedData[bid].size(),
-                         _Cache[bid].getDecompressedStr());
+                         _Cache[bid].decompressedStr());
       _DecompressTime = _DecompressTime + (timeit() - d_st);
 
       _Cache[bid].setData();
@@ -245,7 +245,7 @@ template <typename T> T &mat<T>::getCompressedElement(int rowIdx, int colIdx) {
       _Cache.insert(bid, newBlock);
       snappy::Uncompress(_compressedData[blockId].data(),
                          _compressedData[blockId].size(),
-                         _Cache[bid].getDecompressedStr());
+                         _Cache[bid].decompressedStr());
       _Cache[bid].setData();
 
       return _Cache[bid][rowWithinBlock * _ncols + colIdx];
@@ -572,10 +572,10 @@ template <typename T> void mat<T>::compressByRow(bool removeOriginal) {
     }
 
 #ifdef DEBUG
-    
+
     std::cout << "Size after compression: "
               << (double)(totalCompressed / (1e06)) << " MB" << std::endl;
-              
+
 #endif
   }
 }
@@ -603,7 +603,6 @@ template <typename T> void mat<T>::compressByElement(bool removeOriginal) {
 
     for (int i = 0; i < nBlocks; i++) {
 
-
       char *uncompressedBlock = (char *)(_ddata + blockOffset);
 
       compLength[i] = snappy::Compress(
@@ -628,5 +627,3 @@ template <typename T> int mat<T>::getNRows() { return _nrows; }
 template <typename T> int mat<T>::getNCols() { return _ncols; }
 
 template <typename T> int mat<T>::getNNnz() { return _nnz; }
-
-

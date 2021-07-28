@@ -4,11 +4,11 @@ template <typename T>
 BlockCache<T>::BlockCache(int size, replacementPolicy rPolicy)
     : _size(size), _rPolicy(rPolicy) {}
 
-template <typename T> int BlockCache<T>::getMaxSize() { return _size; }
+template <typename T> int BlockCache<T>::maxSize() const { return _size; }
 
 template <typename T> void BlockCache<T>::setMaxSize(int val) { _size = val; }
 
-template <typename T> int BlockCache<T>::getSize() { return _cache.size(); }
+template <typename T> int BlockCache<T>::size() const { return _cache.size(); }
 
 template <typename T> bool BlockCache<T>::insert(int bid, Block<T> &block) {
 
@@ -24,19 +24,6 @@ template <typename T> bool BlockCache<T>::insert(int bid, Block<T> &block) {
     // TODO: implement other replacement policies here
 
     auto oldest = _cache.begin();
-
-    /*
-    auto it = std::next(oldest);
-
-
-    while (it != _cache.end()){
-        // This comparsion is a hotspot
-        if (it->second->getInsertTime() < oldest->second->getInsertTime()){
-            oldest = it;
-        }
-        it++;
-    }
-    */
     BlockCache<T>::remove(oldest->first);
     BlockCache<T>::insert(bid, block);
   }
@@ -45,20 +32,20 @@ template <typename T> bool BlockCache<T>::insert(int bid, Block<T> &block) {
 
 template <typename T> size_t BlockCache<T>::remove(int bid) {
   _deletions++;
-  delete _cache[bid].getDecompressedStr();
+  delete _cache[bid].decompressedStr();
   return _cache.erase(bid);
 }
 
 template <typename T> Block<T> &BlockCache<T>::operator[](const int bid) {
 
-    if (bid == _lastAccId){
+  if (bid == _lastAccId) {
 
-        return _lastAccPtr->second;
-    }
-    auto it = _cache.find(bid);
-    _lastAccPtr = it; 
-    _lastAccId = bid;
-    return it->second;
+    return _lastAccPtr->second;
+  }
+  auto it = _cache.find(bid);
+  _lastAccPtr = it;
+  _lastAccId = bid;
+  return it->second;
 }
 
 template <typename T> T *BlockCache<T>::access(int bid) {
@@ -69,7 +56,7 @@ template <typename T> T *BlockCache<T>::access(int bid) {
 
     it->second.access();
 
-    return it->second.getData();
+    return it->second.daata();
   }
 }
 
@@ -78,7 +65,7 @@ T *BlockCache<T>::access(
     typename std::unordered_map<int, Block<T>>::iterator it) {
 
   it->second.access();
-  return it->second.getData();
+  return it->second.data();
 }
 
 template <typename T>
@@ -91,7 +78,7 @@ template <typename T> void BlockCache<T>::flushCache() {
   auto it = _cache.begin();
   while (it != _cache.end()) {
 
-    delete it->second.getDecompressedStr();
+    delete it->second.decompressedStr();
     it++;
   }
   _cache.clear();
@@ -115,7 +102,7 @@ template <typename T> void BlockCache<T>::printInfo() {
   std::cout << "| bid\t|\tBlock Address\t|" << std::endl;
   std::cout << "--------------------------------" << std::endl;
   while (it != _cache.end()) {
-    std::cout << "| " << it->first << "\t|\t" << it->second.getData() << "\t|"
+    std::cout << "| " << it->first << "\t|\t" << it->second.data() << "\t|"
               << std::endl;
     it++;
   }
@@ -128,7 +115,7 @@ template <typename T> BlockCache<T>::~BlockCache() {
   auto it = _cache.begin();
   while (it != _cache.end()) {
 
-    delete it->second.getData();
+    delete it->second.data();
     it++;
   }
 }
@@ -143,18 +130,20 @@ template <typename T> void Block<T>::setSize(int val) {
   _size = val;
 }
 
-template <typename T> int Block<T>::getSize() { return _size; }
+template <typename T> size_t Block<T>::size() const { return _size; }
 
 template <typename T> void Block<T>::access() { _accessCount++; }
 
-template <typename T> T *Block<T>::getData() { return _data; }
+template <typename T> T *Block<T>::data() const { return _data; }
 
 template <typename T> void Block<T>::setInsertTime(int val) {
   assert(val > 0);
   _insertTime = val;
 }
 
-template <typename T> int Block<T>::getInsertTime() { return _insertTime; }
+template <typename T> int Block<T>::getInsertTime() const {
+  return _insertTime;
+}
 
 template <typename T> void Block<T>::setData() {
 
@@ -162,20 +151,11 @@ template <typename T> void Block<T>::setData() {
   _dataAllocated = true;
 }
 
-template <typename T> std::string *Block<T>::getDecompressedStr() {
+template <typename T> std::string *Block<T>::decompressedStr() const {
   return _decompressedStr;
 }
 
 template <typename T> T &Block<T>::operator[](const int idx) const {
 
-  // assert(_dataAllocated);
-
   return _data[idx];
 }
-
-/*
-template<typename T>
-Block<T>::~Block(){
-    delete _decompressedStr;
-}
-*/
