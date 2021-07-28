@@ -12,88 +12,6 @@ template <typename T> void mat<T>::setCacheSize(int val) {
   _Cache.setMaxSize(val);
 }
 
-// Dummy default constructor, if no parameters passed
-// create a 10-element array
-template <typename T> mat<T>::mat() {
-
-  _id = _nMatrices;
-  _nMatrices++;
-
-  _ddata = new T[10];
-  _denseAllocated = true;
-  _mtFormat = DENSE;
-  for (int i = 0; i < 10; i++) {
-    _ddata[i] = i;
-  }
-}
-
-// Constructor that uses only number of rows, number of columns and matrix
-// format
-template <typename T>
-mat<T>::mat(int nrows, int ncols, format mtFormat)
-    : _nrows(nrows), _ncols(ncols), _mtFormat(mtFormat) {
-
-  _id = _nMatrices;
-  _nMatrices++;
-
-  int nElems = nrows * ncols;
-
-  if (_mtFormat == DENSE) {
-
-    _ddata = new T[nElems];
-
-    for (int i = 0; i < nElems; i++) {
-      _ddata[i] = i;
-    }
-
-    _denseAllocated = true;
-
-  } // TODO (if _mtFormat == COO)
-}
-
-// Constructor for dense
-template <typename T>
-mat<T>::mat(int nrows, int ncols, int nnz, T *&data)
-    : _nrows(nrows), _ncols(ncols), _nnz(nnz) {
-
-  _id = _nMatrices;
-  _nMatrices++;
-
-  _mtFormat = DENSE;
-
-  _ddata = new T[_nrows * _ncols];
-
-  _ddata = data;
-
-  _denseAllocated = true;
-}
-
-/*
-// Constructor for COO
-template <typename T>
-mat<T>::mat(int nrows, int ncols, int nnz, T *& coovals, int *& cooRowIdx, int
-*& cooColIdx): _nrows(nrows), _ncols(ncols), _nnz(nnz){
-
-    _mtFormat = COO;
-
-    _coovals = new T[_nnz];
-
-    _coovals = coovals;
-
-    _cooRowIdx = new int[_nnz];
-
-    _cooRowIdx = cooRowIdx;
-
-    _cooColIdx = new int[_nnz];
-
-    _cooColIdx = cooColIdx;
-
-    _cooAllocated = true;
-
-
-}
-*/
-
 // Constructor that loads the matrix from a mtx file, using the specified format
 template <typename T>
 mat<T>::mat(const char *matFile, int blockSize, format mtFormat, bool compress,
@@ -338,8 +256,6 @@ template <typename T> T &mat<T>::getCompressedElement(int rowIdx, int colIdx) {
 // Overloading the () operator
 template <typename T> T &mat<T>::operator()(int rowIdx, int colIdx) {
 
-  // assert(rowIdx < _nrows && colIdx < _ncols);
-
   if (_mtFormat == COO) {
     cooToDense();
   }
@@ -355,7 +271,7 @@ template <typename T> T &mat<T>::operator[](int flatIdx) {
 
     cooToDense();
   }
-  if (_isCompressed && _useCompressed) {
+  if (_compElems) {
     int rowIdx = flatIdx / _nrows;
     int colIdx = (flatIdx % _ncols);
     return getCompressedElement(rowIdx, colIdx);
@@ -656,10 +572,10 @@ template <typename T> void mat<T>::compressByRow(bool removeOriginal) {
     }
 
 #ifdef DEBUG
-    /*
+    
     std::cout << "Size after compression: "
               << (double)(totalCompressed / (1e06)) << " MB" << std::endl;
-              */
+              
 #endif
   }
 }
@@ -685,13 +601,8 @@ template <typename T> void mat<T>::compressByElement(bool removeOriginal) {
 
     int blockOffset = 0;
 
-    // T* block = new T[_ncols*_blockSizeRows];
-    // T* block;
     for (int i = 0; i < nBlocks; i++) {
 
-      // block = _ddata + blockOffset;
-
-      // char * uncompressedBlock = (char*)block;
 
       char *uncompressedBlock = (char *)(_ddata + blockOffset);
 
@@ -718,81 +629,4 @@ template <typename T> int mat<T>::getNCols() { return _ncols; }
 
 template <typename T> int mat<T>::getNNnz() { return _nnz; }
 
-template <typename T> void mat<T>::decompressByRow(bool removeCompressed) {
 
-  // TODO: delete [] unused
-
-  if (_mtFormat == DENSE) {
-
-    if (!_isCompressed) {
-
-      std::cerr << "Matrix is not compressed!" << std::endl;
-      return;
-    }
-
-    int nBlocks = _nrows / _blockSize;
-
-    size_t totalUncompressedBytes = 0;
-
-    std::string *uncompressedData = new std::string[nBlocks];
-
-    size_t blocksSizes[nBlocks];
-
-    for (int i = 0; i < nBlocks; i++) {
-      size_t partialSize;
-      // snappy::GetUncompressedLength(_compressedData[i].data(),
-      // _compressedData[i].size(), &partialSize);
-
-      // totalUncompressedBytes += partialSize;
-
-      snappy::Uncompress(_compressedData[i].data(), _compressedData[i].size(),
-                         &uncompressedData[i]);
-
-      // blocksSizes[i] = partialSize;
-
-      // std::cout << "Uncompressed block size in bytes is : " << blocksSizes[i]
-      // << std::endl;
-    }
-
-    //_ddata = new T[totalUncompressedBytes];
-    //_ddata = new T[nblocks * blockSize * _ncols * size(T)];
-
-    int ddataOffset = 0;
-
-    for (int i = 0; i < nBlocks; i++) {
-
-      // T* block = new T[blocksSizes[i]];
-
-      T *block = new T[_blockSize * _ncols * sizeof(T)];
-
-      block = (T *)uncompressedData[i].c_str();
-
-      for (int j = ddataOffset; j < ddataOffset + _blockSize * _ncols; j++) {
-
-        _ddata[j] = block[j - i * ddataOffset];
-      }
-
-      if (ddataOffset < totalUncompressedBytes / sizeof(T)) {
-
-        ddataOffset += _blockSize * _ncols;
-      }
-    }
-
-    // collect garbage
-    // delete [] block;
-    // delete [] uncompressedData;
-
-    _denseAllocated = true;
-
-    if (removeCompressed) {
-
-      _isCompressed = false;
-      delete[] _compressedData;
-    }
-  }
-}
-
-// TODO: printing a matrix using cout ?
-// std::ostream & operator << (std::ostream & o, const mat<T> & m){
-
-//}

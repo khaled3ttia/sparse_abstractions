@@ -30,57 +30,39 @@ enum compressMode { ELEMENTS, ROWS };
 
 template <typename T> class mat {
 
-  int _id;
+  std::string *_compressedData; 
+  T *_ddata; 
+  T *_coovals;
+  float _invBlockSize;
 
-  // common fields
+  int _id;
+  int *_cooRowIdx;
+  int *_cooColIdx;
   unsigned int _ncols;
   unsigned int _nrows;
   unsigned int _nnz;
-  enum format _mtFormat;
-
-  // structures for dense
-  T *_ddata;
-  std::string *_compressedData;
-
-  bool _denseAllocated = false;
-
-  // structures for COO
-  T *_coovals;
-  int *_cooRowIdx;
-  int *_cooColIdx;
-  bool _cooAllocated = false;
-
-  // compression related
-  bool _isCompressed = false;
-  enum compressMode _cmode = ELEMENTS;
   size_t _blockSize;
-  float _invBlockSize;
 
+  enum format _mtFormat;
+  enum compressMode _cmode = ELEMENTS;
+ 
+  bool _denseAllocated = false;
+  bool _cooAllocated = false;
+  bool _isCompressed = false;
   bool _useCompressed = false;
+  
+  // this flag will be = (_useCompressed && _isCompressed)
   bool _compElems = false;
 
   void compressByRow(bool = true);
   void compressByElement(bool = true);
 
-  void decompressByRow(bool = true);
-
-  T &getCompressedElement(int, int);
+  // method called to access an element when _compElems==true
+  T& getCompressedElement(int, int);
 
 public:
-  static BlockCache<T> _Cache;
-  static int _nMatrices;
-  static int _DecompressCallsCount;
-  static double _DecompressTime;
-  static double _InsertTime;
-  static void setCacheSize(int);
 
-  mat();
-
-  mat(int, int = 1, format = DENSE);
-
-  mat(int, int, int, T *&);
-
-  // mat(int, int, int, T *&, int *&, int *&);
+  mat() = delete;
 
   // Read a matrix from a mtx file using the specified format
   mat(const char *, int = 2, format = DENSE, bool = true, bool = false,
@@ -89,6 +71,12 @@ public:
   // copy constructor
   mat(const mat &);
 
+  static BlockCache<T> _Cache;
+  static double _DecompressTime;
+  static double _InsertTime; 
+  static int _nMatrices;
+  static int _DecompressCallsCount; 
+  static void setCacheSize(int);
   // Overloading the ( ) operator to access matrix
   T &operator()(int, int = 0);
 
