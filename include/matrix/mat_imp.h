@@ -208,6 +208,9 @@ template <typename T> T &mat<T>::getCompressedElement(int rowIdx, int colIdx) {
     auto it = _Cache.find(bid);
 
     if (it != _Cache.getEnd()) {
+#ifdef FILL_COMPRESSED
+    elemWithinBlock = flatIdx % _Cache[bid].size();
+#endif
       // Cache hit
       return _Cache[bid][elemWithinBlock];
     } else {
@@ -607,7 +610,13 @@ template <typename T> void mat<T>::compressByElement(bool removeOriginal) {
 
       compLength[i] = snappy::Compress(
           uncompressedBlock, sizeof(T) * _blockSize, &_compressedData[i]);
+#ifdef FILL_COMPRESSED
+    
+      Block<T> cBlock((T*)_compressedData[i].c_str());
+      cBlock.setSize(_compressedData[i].size() / sizeof(T));
+      _Cache.insert(i, cBlock);
 
+#endif
       blockOffset += _blockSize;
       totalCompressed += compLength[i];
     }

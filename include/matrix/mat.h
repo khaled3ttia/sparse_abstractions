@@ -18,9 +18,9 @@
 #include <unistd.h>
 #endif
 
-#include "blockcache.h"
+#include "../blockcache/blockcache.h"
 #include "snappy.h"
-#include "utils.h"
+#include "../utils/utils.h"
 #include <assert.h>
 #include <cmath>
 

@@ -111,13 +111,14 @@ template <typename T> void BlockCache<T>::printInfo() {
 #endif
 
 template <typename T> BlockCache<T>::~BlockCache() {
-
+  /*  
   auto it = _cache.begin();
   while (it != _cache.end()) {
 
     delete it->second.data();
     it++;
   }
+  */
 }
 
 template <typename T> Block<T>::Block(T *src) {
